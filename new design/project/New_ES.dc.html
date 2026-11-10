@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New estimating bid and transfer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5;text-decoration:none}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; display: flex; flex-direction: column">
+
+  <header style="background: #0f1b2d; color: #ffffff; padding: 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; min-height: 60px">
+    <b style="letter-spacing: .06em; font-size: 14px">STAFFWARE</b>
+    <span style="color: #8ea2be">/</span>
+    <span style="font-weight: 600">Estimating</span>
+  </header>
+
+  <nav aria-label="Estimating sections" style="background: #ffffff; border-bottom: 1px solid #e1e7ef; padding: 0 28px; display: flex; flex-wrap: wrap; gap: 4px">
+    <a href="#" style="padding: 14px 14px 12px; color: #1f5bb5; font-weight: 600; font-size: 14px; border-bottom: 2px solid #1f5bb5">Customers &amp; bids</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Master assemblies</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Items &amp; prices</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Job history log</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Reports</a>
+  </nav>
+
+  <main style="padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; box-sizing: border-box; width: 100%">
+    <div>
+      <div style="font-size: 13px; color: #4f5f75; margin-bottom: 6px"><a href="#">[Customer]</a> / <a href="#">[Job]</a> / Bid [number]</div>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 800">Bid [number] — [Job name]</h1>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+      <section style="flex: 999 1 640px; min-width: 0; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px">Plan [number] · Standard pack</h2>
+          <button type="button" style="height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Add assembly</button>
+        </div>
+        <div style="border: 1px solid #e1e7ef; border-radius: 12px; overflow: hidden">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 12px 14px; background: #f6f8fc; border-bottom: 1px solid #e1e7ef">
+            <b style="font-size: 14px">01a. Ceiling Light - (4-0 Metal) Exterior PK</b>
+            <span style="font-size: 13px; color: #4f5f75">Assembly cost shown here — not in Access today</span>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums">
+              <thead><tr style="text-align: left; color: #4f5f75; font-size: 12px">
+                <th style="padding: 9px 14px; border-bottom: 1px solid #e1e7ef">Item</th>
+                <th style="padding: 9px 14px; border-bottom: 1px solid #e1e7ef; text-align: right">Qty</th>
+                <th style="padding: 9px 14px; border-bottom: 1px solid #e1e7ef">Stage</th>
+                <th style="padding: 9px 14px; border-bottom: 1px solid #e1e7ef">Work</th>
+                <th style="padding: 9px 14px; border-bottom: 1px solid #e1e7ef; text-align: right">Est. price</th>
+              </tr></thead>
+              <tbody>
+                <tr><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">HD-CRMP-SLVE</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7; text-align: right">1</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">Rough</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">High voltage</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7; text-align: right">$0.0876</td></tr>
+                <tr><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">WI-14-2-ROMEX</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7; text-align: right">20</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">Rough</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7">High voltage</td><td style="padding: 9px 14px; border-bottom: 1px solid #eef2f7; text-align: right">$0.2956</td></tr>
+                <tr><td style="padding: 9px 14px">DE-SWSP-15A-DEC-WH</td><td style="padding: 9px 14px; text-align: right">1</td><td style="padding: 9px 14px">Trim</td><td style="padding: 9px 14px">High voltage</td><td style="padding: 9px 14px; text-align: right">$1.2841</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 12.5px; color: #4f5f75">Assembly items are illustrative, taken from the Master assemblies screen. Nested "+" sub-datasheets become plain expandable cards.</p>
+      </section>
+
+      <aside style="flex: 1 1 320px; max-width: 400px; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 16px">Transfer to Plan management</h2>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #3d4c61">Replaces three buttons that needed filters A–G. Pick what to copy; the app checks everything before it runs.</p>
+        <div role="group" aria-label="What to transfer" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+          <button type="button" style="height: 40px; border-radius: 8px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Whole bid</button>
+          <button type="button" style="height: 40px; border-radius: 8px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-size: 13.5px; font-weight: 600">One plan</button>
+          <button type="button" style="height: 40px; border-radius: 8px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">One pack</button>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Into PM bid<select style="height: 40px; border: 1px solid #d3dbe7; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 400"><option>[PM bid for this job]</option></select></label>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px">
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #1d6b42; font-weight: 700">✓</span>PM bid belongs to the same job</li>
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #1d6b42; font-weight: 700">✓</span>PM bid is not locked</li>
+          <li style="display: flex; gap: 8px; align-items: center"><span style="color: #8a5300; font-weight: 700">!</span>Plan number already exists in the PM bid</li>
+        </ul>
+        <button type="button" disabled style="height: 46px; border-radius: 10px; border: 0; background: #c9d4e5; color: #3d4c61; font: inherit; font-weight: 700; font-size: 15px">Fix 1 issue to transfer</button>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

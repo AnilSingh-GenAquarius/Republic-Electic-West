@@ -1,0 +1,285 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-10T11:35:00Z"
+  },
+  "title": "StaffWare Redesign Proposal",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "designSystems": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "Proposal cover — StaffWare on the web",
+      "expand": "fill"
+    },
+    "Old_Home.dc.html": {
+      "x": 0,
+      "y": 1300,
+      "w": 1320,
+      "h": 770,
+      "title": "Existing — Access main switchboard"
+    },
+    "New_Home.dc.html": {
+      "x": 1400,
+      "y": 1300,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Home dashboard",
+      "expand": "fill"
+    },
+    "Old_MG.dc.html": {
+      "x": 0,
+      "y": 2700,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Management switchboard"
+    },
+    "New_MG.dc.html": {
+      "x": 1400,
+      "y": 2700,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Management workspace",
+      "expand": "fill"
+    },
+    "Old_AR.dc.html": {
+      "x": 0,
+      "y": 4100,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Accounts receivable switchboard"
+    },
+    "New_AR.dc.html": {
+      "x": 1400,
+      "y": 4100,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Billing workflow",
+      "expand": "fill"
+    },
+    "Old_IC.dc.html": {
+      "x": 0,
+      "y": 5500,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Inventory control switchboard"
+    },
+    "New_IC.dc.html": {
+      "x": 1400,
+      "y": 5500,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Inventory workspace",
+      "expand": "fill"
+    },
+    "Old_PO.dc.html": {
+      "x": 0,
+      "y": 6900,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Purchasing switchboard"
+    },
+    "New_PO.dc.html": {
+      "x": 1400,
+      "y": 6900,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Purchase orders",
+      "expand": "fill"
+    },
+    "Old_Report.dc.html": {
+      "x": 0,
+      "y": 8300,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — TWIP report (print preview)"
+    },
+    "New_Report.dc.html": {
+      "x": 1400,
+      "y": 8300,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Interactive WIP report",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Old_PR.dc.html": {
+      "x": 0,
+      "y": 9700,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Payroll switchboard"
+    },
+    "New_PR.dc.html": {
+      "x": 1400,
+      "y": 9700,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Guided payroll run",
+      "expand": "fill"
+    },
+    "Old_ES.dc.html": {
+      "x": 0,
+      "y": 11100,
+      "w": 1320,
+      "h": 790,
+      "title": "Existing — Estimating switchboard"
+    },
+    "New_ES.dc.html": {
+      "x": 1400,
+      "y": 11100,
+      "w": 1440,
+      "h": 900,
+      "title": "New — Bid and transfer to Plan management",
+      "expand": "fill"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Old_Home.dc.html",
+    "New_Home.dc.html",
+    "Old_MG.dc.html",
+    "New_MG.dc.html",
+    "Old_AR.dc.html",
+    "New_AR.dc.html",
+    "Old_IC.dc.html",
+    "New_IC.dc.html",
+    "Old_PO.dc.html",
+    "New_PO.dc.html",
+    "Old_Report.dc.html",
+    "New_Report.dc.html",
+    "Old_PR.dc.html",
+    "New_PR.dc.html",
+    "Old_ES.dc.html",
+    "New_ES.dc.html"
+  ],
+  "notes": {
+    "t1": {
+      "x": 0,
+      "y": 1020,
+      "text": "1 · Home & navigation — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t2": {
+      "x": 0,
+      "y": 2420,
+      "text": "2 · Management (job cost) — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t3": {
+      "x": 0,
+      "y": 3820,
+      "text": "3 · Accounts receivable (billing) — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t4": {
+      "x": 0,
+      "y": 5220,
+      "text": "4 · Inventory control — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t5": {
+      "x": 0,
+      "y": 6620,
+      "text": "5 · Purchasing — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t6": {
+      "x": 0,
+      "y": 8020,
+      "text": "6 · Reports — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "n1": {
+      "x": 2920,
+      "y": 1300,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• 18 module codes become a clear menu grouped by area (Operations, Finance, Supply chain, Pre-construction)\n• One search box finds any account, job, lot, employee or item\n• Live numbers on the home page: open lots, billing to post, payroll pending, low stock\n• Each user only sees the modules they have access to\n• Works in any browser — no Access install, no 1920×1080 requirement"
+    },
+    "n2": {
+      "x": 2920,
+      "y": 2700,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Letter codes (A…K) next to every button are replaced by filters that appear only for the report you pick\n• 30+ grey buttons become a searchable report list with descriptions\n• Open-lots-per-period table becomes a chart you can click into\n• Results open on screen first — sort, search, export to Excel/CSV, then print"
+    },
+    "n3": {
+      "x": 2920,
+      "y": 4100,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Billing becomes a guided 3-step flow: Process → Review pre-bill → Post\n• Risky actions (Post billing, Clear snapshot) need a confirmation that shows exactly what will change\n• The 'customer snapshot in use' box becomes a visible lock banner, so two people can't bill the same customer\n• Invoices are searchable and printable from one list"
+    },
+    "n4": {
+      "x": 2920,
+      "y": 5500,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Items, stock and counts on one screen with live search\n• Low stock and negative on-hand are flagged automatically instead of needing a report\n• Inventory count is a step-by-step process (Start → Enter → Review → Post)\n• 40 report buttons grouped into Stock, Material posted, Counter material and Counts"
+    },
+    "n5": {
+      "x": 2920,
+      "y": 6900,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Purchase orders in one list with status chips: Open, Back-ordered, Received, Billed\n• Receive and bill a PO from the PO itself — no separate forms to hunt for\n• Vendor price comparison shown while you add items\n• Post PO is one button with a summary of what posts to inventory"
+    },
+    "n6": {
+      "x": 2920,
+      "y": 8300,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Reports open in the browser instead of a fixed print preview\n• Group headers collapse, columns sort, totals stay visible\n• Click a lot to drill into its labor, material and billing detail\n• Export to Excel/CSV or print to PDF with the same layout as today"
+    },
+    "t7": {
+      "x": 0,
+      "y": 9420,
+      "text": "7 · Payroll — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "t8": {
+      "x": 0,
+      "y": 10820,
+      "text": "8 · Estimating — before / after",
+      "kind": "title1",
+      "maxW": 2840
+    },
+    "n7": {
+      "x": 2920,
+      "y": 9700,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Payroll becomes 4 clear steps: Piece cards → Hourly cards → Review → Post\n• One Post payroll button instead of \"Post payroll\" and \"Post payroll (new)\"\n• Missing cards and problem lots are flagged before posting, not after\n• About 28 reports move to a searchable Reports tab"
+    },
+    "n8": {
+      "x": 2920,
+      "y": 11100,
+      "w": 420,
+      "fill": "blue",
+      "size": "m",
+      "text": "What changes\n• Customer → job → bid → plan shown as a breadcrumb, not 7 filter boxes\n• Assemblies show their items and total cost in one card (no nested + datasheets)\n• Transfer to Plan management is one panel: choose bid, plan or pack, and the app checks job, lock and duplicates first\n• Price updates show a preview before they run"
+    }
+  }
+}

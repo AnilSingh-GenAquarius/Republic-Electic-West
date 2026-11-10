@@ -1,0 +1,58 @@
+/* Customer service (CS) */
+.cs-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.cs-grid2 > * { min-width: 0; }
+.cs-stack { display: flex; flex-direction: column; gap: 16px; }
+.cs-dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px 18px; margin: 0; }
+.cs-dl div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cs-dl dt { font-size: 12px; color: var(--muted); }
+.cs-dl dd { margin: 0; font-weight: 550; overflow-wrap: anywhere; }
+.cs-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.cs-inline > label { flex: 1 1 150px; min-width: 0; }
+.cs-inline > .btn { flex: 0 0 auto; }
+.cs-mini { font-size: 12px; color: var(--muted); }
+.cs-phone-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; margin-bottom: 6px; }
+.cs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cs-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--border); font-size: 13px; }
+.cs-chip button { border: 0; background: transparent; cursor: pointer; color: var(--muted); padding: 0 4px; font-size: 15px; line-height: 1; }
+
+/* calendar */
+.cs-cal-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.cs-cal-bar input, .cs-cal-bar select { width: auto; }
+.cs-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.cs-day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 8px; min-height: 140px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.cs-day.today { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.cs-day-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+.cs-day-head b { font-size: 14px; }
+.cs-appt { display: block; text-align: left; width: 100%; border: 1px solid var(--border); border-left: 3px solid var(--teal); border-radius: 6px; padding: 5px 7px; background: var(--surface-2); font: inherit; font-size: 12.5px; color: inherit; cursor: pointer; line-height: 1.3; }
+.cs-appt:hover { border-color: var(--primary); }
+.cs-appt.closed { border-left-color: var(--green); opacity: .8; }
+.cs-appt .t { font-weight: 650; display: block; }
+.cs-appt .s { color: var(--muted); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-note { font-size: 12px; background: var(--amber-soft); color: var(--amber); border-radius: 6px; padding: 4px 6px; overflow-wrap: anywhere; }
+.cs-note-edit { display: flex; gap: 4px; }
+.cs-note-edit input { font-size: 12px; height: 28px; min-width: 0; }
+
+/* reports */
+.cs-report h3 { margin: 18px 0 6px; font-size: 15px; }
+.cs-report h4 { margin: 12px 0 4px; font-size: 13.5px; color: var(--text-2); }
+.cs-sheet { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px 20px; margin-bottom: 14px; break-inside: avoid; }
+.cs-sheet-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 10px; }
+.cs-sheet-head h3 { margin: 0; }
+.cs-print-title { display: none; }
+.cs-totals { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 10px 0; font-size: 14px; }
+
+@media (max-width: 1100px) {
+  .cs-week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .cs-grid2 { grid-template-columns: minmax(0, 1fr); }
+  .cs-week { grid-template-columns: minmax(0, 1fr); }
+  .cs-day { min-height: 0; }
+  .cs-sheet { padding: 12px; }
+}
+@media print {
+  .cs-print-title { display: block; margin: 0 0 8px; }
+  .cs-sheet { border: 0; padding: 0; }
+  .cs-route-page { break-after: page; }
+  .fm-reports { display: none !important; }
+}

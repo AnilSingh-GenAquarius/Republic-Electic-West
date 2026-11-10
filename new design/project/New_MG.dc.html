@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New Management workspace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5;text-decoration:none}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; display: flex; flex-direction: column">
+
+  <header style="background: #0f1b2d; color: #ffffff; padding: 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; min-height: 60px">
+    <b style="letter-spacing: .06em; font-size: 14px">STAFFWARE</b>
+    <span style="color: #8ea2be">/</span>
+    <span style="font-weight: 600">Management</span>
+    <label style="margin-left: auto; flex: 0 1 360px; display: flex; align-items: center; gap: 8px; background: #1f3350; border-radius: 10px; padding: 0 12px; height: 38px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c9d4e5" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <span style="position: absolute; left: -9999px">Search</span>
+      <input type="search" placeholder="Search jobs, lots, reports…" style="flex: 1; border: 0; background: transparent; font: inherit; font-size: 14px; color: #ffffff; outline: none">
+    </label>
+  </header>
+
+  <nav aria-label="Management sections" style="background: #ffffff; border-bottom: 1px solid #e1e7ef; padding: 0 28px; display: flex; flex-wrap: wrap; gap: 4px">
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Overview</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Job cost</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #1f5bb5; font-weight: 600; font-size: 14px; border-bottom: 2px solid #1f5bb5">Reports</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Lot details</a>
+  </nav>
+
+  <main style="padding: 24px 28px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; max-width: 1400px; box-sizing: border-box; width: 100%">
+
+    <section aria-label="Report list" style="flex: 1 1 300px; max-width: 360px; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+      <label style="display: flex; align-items: center; gap: 8px; border: 1px solid #d3dbe7; border-radius: 10px; padding: 0 10px; height: 40px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f5f75" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span style="position: absolute; left: -9999px">Find a report</span>
+        <input type="search" placeholder="Find a report…" style="flex: 1; border: 0; font: inherit; font-size: 14px; outline: none">
+      </label>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: #4f5f75">JOB COST</span>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Job cost by builder / job / phase / super</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; background: #e6eefb; color: #163f80; font-weight: 600; font-size: 14px">Lot budget vs job cost</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Job cost by type of work</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Job cost packs with no value</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: #4f5f75">LOTS</span>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Lots ready to close</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Open lots per period</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Option packs scheduled by job</a>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 11.5px; font-weight: 700; letter-spacing: .08em; color: #4f5f75">LABOR &amp; MATERIAL</span>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Labor paid to lot</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Labor paid vs budget</a>
+        <a href="#" style="padding: 9px 10px; border-radius: 8px; color: #142033; font-size: 14px">Material posted to lot</a>
+      </div>
+    </section>
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+      <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800">Lot budget vs job cost</h1>
+          <p style="margin: 6px 0 0; font-size: 14.5px; color: #4f5f75">Compares each lot's contract budget with labor paid and material posted. Only the filters this report uses are shown.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Builder<select style="height: 40px; border: 1px solid #d3dbe7; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 400"><option>Taylor Morrison</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Job<select style="height: 40px; border: 1px solid #d3dbe7; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 400"><option>Esplanade at Turkey Creek</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Lot (optional)<select style="height: 40px; border: 1px solid #d3dbe7; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 400"><option>All lots</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Labor burden %<input value="25" inputmode="decimal" style="height: 38px; border: 1px solid #d3dbe7; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 400"></label>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button type="button" style="height: 42px; padding: 0 20px; border-radius: 10px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-weight: 600; font-size: 14px">Run report</button>
+          <button type="button" style="height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 14px; color: #142033">Export to Excel</button>
+          <button type="button" style="height: 42px; padding: 0 16px; border-radius: 10px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 14px; color: #142033">Print</button>
+          <span style="align-self: center; font-size: 13px; color: #4f5f75">Replaces Access filter codes "A B C K"</span>
+        </div>
+      </section>
+
+      <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 16px">Open lots per period</h2>
+          <div style="display: flex; gap: 16px; font-size: 13px; color: #3d4c61">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 2px; background: #1f5bb5"></span>REI</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 2px; background: #f0a04b"></span>REW</span>
+          </div>
+        </div>
+        <div role="img" aria-label="Bar chart of open lots per month for REI and REW, November 2025 to October 2026" style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; align-items: end; height: 200px; border-bottom: 1px solid #e1e7ef; padding-bottom: 2px">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="12">
+            <div style="display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 100%">
+              <div style="width: 40%; border-radius: 4px 4px 0 0; background: #1f5bb5; height: {{b.rei}}"></div>
+              <div style="width: 40%; border-radius: 4px 4px 0 0; background: #f0a04b; height: {{b.rew}}"></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px; font-size: 11.5px; color: #4f5f75; text-align: center">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="12"><span>{{b.label}}</span></sc-for>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: #4f5f75">Click a bar to open that month's lots. Figures from the current Access screen.</p>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const data = [
+      ['Nov 25', 24, 32], ['Dec 25', 55, 38], ['Jan 26', 145, 69], ['Feb 26', 71, 91],
+      ['Mar 26', 64, 120], ['Apr 26', 120, 142], ['May 26', 120, 162], ['Jun 26', 206, 155],
+      ['Jul 26', 249, 182], ['Aug 26', 255, 222], ['Sep 26', 277, 146], ['Oct 26', 188, 87]
+    ];
+    const max = 280;
+    return { bars: data.map(([label, rei, rew]) => ({ label, rei: Math.round(rei / max * 100) + '%', rew: Math.round(rew / max * 100) + '%' })) };
+  }
+}
+</script>
+</body>
+</html>

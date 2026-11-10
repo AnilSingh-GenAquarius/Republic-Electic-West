@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New payroll run</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5;text-decoration:none}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; display: flex; flex-direction: column">
+
+  <header style="background: #0f1b2d; color: #ffffff; padding: 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; min-height: 60px">
+    <b style="letter-spacing: .06em; font-size: 14px">STAFFWARE</b>
+    <span style="color: #8ea2be">/</span>
+    <span style="font-weight: 600">Payroll</span>
+  </header>
+
+  <nav aria-label="Payroll sections" style="background: #ffffff; border-bottom: 1px solid #e1e7ef; padding: 0 28px; display: flex; flex-wrap: wrap; gap: 4px">
+    <a href="#" style="padding: 14px 14px 12px; color: #1f5bb5; font-weight: 600; font-size: 14px; border-bottom: 2px solid #1f5bb5">This week's payroll</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Timecards</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Employees</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Pay periods</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Reports</a>
+  </nav>
+
+  <main style="padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; box-sizing: border-box; width: 100%">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+      <div><h1 style="margin: 0; font-size: 24px; font-weight: 800">Payroll for 10/28/2026</h1><p style="margin: 6px 0 0; font-size: 14px; color: #4f5f75">Piece date 10/28/2026 · Hourly date 10/28/2026 · Division REW</p></div>
+      <span style="font-size: 13px; font-weight: 700; color: #1f5bb5; background: #e6eefb; padding: 8px 14px; border-radius: 999px">In progress</span>
+    </div>
+
+    <ol aria-label="Payroll steps" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+      <li style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; color: #1d6b42">DONE</span><b style="font-size: 15px">1. Piece timecards</b><span style="font-size: 13px; color: #4f5f75">Entered by lot and pack</span></li>
+      <li style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; color: #1d6b42">DONE</span><b style="font-size: 15px">2. Hourly timecards</b><span style="font-size: 13px; color: #4f5f75">Entered by employee and job</span></li>
+      <li style="background: #ffffff; border: 2px solid #1f5bb5; border-radius: 12px; padding: 13px 15px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; color: #1f5bb5">NEXT</span><b style="font-size: 15px">3. Review totals</b><span style="font-size: 13px; color: #4f5f75">Piece + hourly by employee</span></li>
+      <li style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 700; color: #4f5f75">LAST</span><b style="font-size: 15px">4. Post payroll</b><span style="font-size: 13px; color: #4f5f75">Writes labor paid and job cost</span></li>
+    </ol>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+      <section style="flex: 999 1 640px; min-width: 0; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px">Review totals by employee</h2>
+          <div style="display: flex; gap: 8px"><button type="button" style="height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Piece &amp; hourly report</button><button type="button" style="height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Export payroll</button></div>
+        </div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums">
+            <thead><tr style="text-align: left; color: #4f5f75; font-size: 12.5px">
+              <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Employee</th>
+              <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Piece</th>
+              <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Hourly</th>
+              <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Total</th>
+              <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Check</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7">[Employee name]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 600">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7"><span style="font-size: 12px; font-weight: 700; color: #1d6b42; background: #e3f4ea; padding: 3px 8px; border-radius: 999px">OK</span></td></tr>
+              <tr><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7">[Employee name]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">—</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 600">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7"><span style="font-size: 12px; font-weight: 700; color: #8a5300; background: #fff1dc; padding: 3px 8px; border-radius: 999px">No hourly card</span></td></tr>
+              <tr><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7">[Employee name]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">—</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right; font-weight: 600">[$]</td><td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7"><span style="font-size: 12px; font-weight: 700; color: #1d6b42; background: #e3f4ea; padding: 3px 8px; border-radius: 999px">OK</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin: 0; font-size: 12.5px; color: #4f5f75">Problems (missing cards, lots without a pack, closed lots) are flagged here before posting, instead of being found afterwards in a report.</p>
+      </section>
+
+      <aside style="flex: 1 1 300px; max-width: 380px; display: flex; flex-direction: column; gap: 18px">
+        <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 16px">Post payroll</h2>
+          <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #3d4c61">One posting button, replacing "Post payroll" and "Post payroll (new)". Hourly time is appended to piece work automatically.</p>
+          <button type="button" style="height: 46px; border-radius: 10px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-weight: 700; font-size: 15px">Review and post…</button>
+        </section>
+        <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-size: 16px">Recently paid</h2>
+          <div style="display: flex; justify-content: space-between; font-size: 14px"><span>10/23/2026</span><span style="color: #4f5f75">REW</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px"><span>10/20/2026</span><span style="color: #4f5f75">REI</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px"><span>10/16/2026</span><span style="color: #4f5f75">REW</span></div>
+          <a href="#" style="font-size: 13.5px; font-weight: 600">All pay periods</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New inventory workspace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5;text-decoration:none}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; display: flex; flex-direction: column">
+
+  <header style="background: #0f1b2d; color: #ffffff; padding: 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; min-height: 60px">
+    <b style="letter-spacing: .06em; font-size: 14px">STAFFWARE</b>
+    <span style="color: #8ea2be">/</span>
+    <span style="font-weight: 600">Inventory control</span>
+  </header>
+
+  <nav aria-label="Inventory sections" style="background: #ffffff; border-bottom: 1px solid #e1e7ef; padding: 0 28px; display: flex; flex-wrap: wrap; gap: 4px">
+    <a href="#" style="padding: 14px 14px 12px; color: #1f5bb5; font-weight: 600; font-size: 14px; border-bottom: 2px solid #1f5bb5">Items &amp; stock</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Transactions</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Inventory counts</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Pack material</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Vendors</a>
+    <a href="#" style="padding: 14px 14px 12px; color: #4f5f75; font-size: 14px">Reports</a>
+  </nav>
+
+  <main style="padding: 24px 28px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; max-width: 1400px; box-sizing: border-box; width: 100%">
+    <section style="flex: 999 1 640px; min-width: 0; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+        <label style="flex: 1 1 280px; display: flex; align-items: center; gap: 8px; border: 1px solid #d3dbe7; border-radius: 10px; padding: 0 10px; height: 42px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f5f75" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+          <span style="position: absolute; left: -9999px">Search items</span>
+          <input type="search" value="romex" style="flex: 1; border: 0; font: inherit; font-size: 14px; outline: none">
+        </label>
+        <div role="group" aria-label="Quick filters" style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-size: 13.5px; font-weight: 600">All items</button>
+          <button type="button" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Need to order</button>
+          <button type="button" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Negative on hand</button>
+          <button type="button" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13.5px">Zero value</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums">
+          <thead><tr style="text-align: left; color: #4f5f75; font-size: 12.5px">
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Item</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Description</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Stage / work</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Est. price</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">On hand REI</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">On hand REW</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{items}}" as="i" hint-placeholder-count="4">
+              <tr>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7"><a href="#" style="font-weight: 600">{{i.code}}</a></td>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7">{{i.desc}}</td>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; color: #4f5f75">{{i.stage}}</td>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">{{i.price}}</td>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[qty]</td>
+                <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">[qty]</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin: 0; font-size: 12.5px; color: #4f5f75">Click an item for its stock by division, purchase history, vendors and every job it is used on — today these are separate Access reports.</p>
+    </section>
+
+    <aside style="flex: 1 1 300px; max-width: 380px; display: flex; flex-direction: column; gap: 18px">
+      <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <h2 style="margin: 0; font-size: 16px">Inventory count · REW</h2>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+          <li style="display: flex; gap: 10px; align-items: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #1d7a4a; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">✓</span>Start count (snapshot taken)</li>
+          <li style="display: flex; gap: 10px; align-items: center"><span style="width: 26px; height: 26px; border-radius: 50%; background: #1f5bb5; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">2</span><b>Enter counted quantities</b></li>
+          <li style="display: flex; gap: 10px; align-items: center; color: #4f5f75"><span style="width: 26px; height: 26px; border-radius: 50%; background: #e1e7ef; color: #3d4c61; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">3</span>Review top differences</li>
+          <li style="display: flex; gap: 10px; align-items: center; color: #4f5f75"><span style="width: 26px; height: 26px; border-radius: 50%; background: #e1e7ef; color: #3d4c61; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">4</span>Post count</li>
+        </ol>
+        <a href="#" style="height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #1f5bb5; color: #ffffff; font-weight: 600; font-size: 14px">Continue count</a>
+      </section>
+      <section style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 16px">Pack material to job cost</h2>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #3d4c61">Unposted pack material: <b>REI</b>, <b>REW</b>. Review the lots first, then post — a summary shows the quantities and value before anything is written.</p>
+        <a href="#" style="height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #d3dbe7; color: #142033; font-weight: 600; font-size: 14px">Review unposted packs</a>
+      </section>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { items: [
+      { code: 'WI-14-2-ROMEX', desc: '14/2 Romex wire', stage: 'Rough · High voltage', price: '$0.2956' },
+      { code: 'HD-CRMP-SLVE', desc: 'Crimp sleeve', stage: 'Rough · High voltage', price: '$0.0876' },
+      { code: 'DE-SWSP-15A-DEC-WH', desc: '15A decorator switch, white', stage: 'Trim · High voltage', price: '$1.2841' },
+      { code: 'BX-MT-1G-HB-EX', desc: '1G metal handy box EXT, 1-7/8" deep', stage: 'Rough · High voltage', price: '$2.9275' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

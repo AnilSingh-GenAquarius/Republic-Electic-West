@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>StaffWare redesign proposal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; box-sizing: border-box; padding: 56px 24px 64px">
+  <div style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #0f1b2d; display: flex; align-items: center; justify-content: center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"></path></svg>
+        </div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-weight: 800; letter-spacing: .08em; font-size: 15px">STAFFWARE</span>
+          <span style="font-size: 13px; color: #4f5f75">Republic Electric West</span>
+        </div>
+      </div>
+      <span style="font-size: 13px; font-weight: 600; color: #1f5bb5; background: #e6eefb; padding: 8px 14px; border-radius: 999px">Design proposal · [DATE]</span>
+    </header>
+
+    <section style="display: flex; flex-direction: column; gap: 16px; max-width: 860px">
+      <h1 style="margin: 0; font-size: 52px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em">StaffWare, moved from Access to a modern web app</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.55; color: #3d4c61">The same jobs, lots, billing, payroll and inventory rules your team uses today — on clear, searchable screens that run in any browser. Each row of this canvas shows an existing Access screen next to its new web version.</p>
+    </section>
+
+    <section style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+      <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #a23b2c">TODAY — ACCESS</span>
+        <h2 style="margin: 0; font-size: 20px">Powerful, but hard to learn</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.45; color: #3d4c61">
+          <li>18 switchboards with hundreds of grey buttons</li>
+          <li>Letter codes (A, B, E F K…) say which filters each report needs</li>
+          <li>Reports only open as fixed print previews</li>
+          <li>Needs Microsoft Access on a 1920×1080 office PC</li>
+        </ul>
+      </div>
+      <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #1f5bb5">PROPOSED — WEB</span>
+        <h2 style="margin: 0; font-size: 20px">Same rules, easier screens</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.45; color: #3d4c61">
+          <li>One menu grouped by area, plus a global search</li>
+          <li>Filters appear only for the report you choose</li>
+          <li>Results on screen: sort, drill in, export, then print</li>
+          <li>Guided steps for billing, payroll and inventory counts</li>
+        </ul>
+      </div>
+      <div style="background: #0f1b2d; color: #ffffff; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: .08em; color: #9fc0f5">WHAT STAYS THE SAME</span>
+        <h2 style="margin: 0; font-size: 20px">Your data and your logins</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 1.45; color: #d5deec">
+          <li>Same SQL Server database — no data migration</li>
+          <li>Same LoginUsers accounts and module permissions</li>
+          <li>Business rules follow the existing Access queries and macros</li>
+          <li>Access can keep running side by side during roll-out</li>
+        </ul>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 18px">In this proposal</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">1</b><span style="font-size: 14px; font-weight: 600">Home &amp; navigation</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">2</b><span style="font-size: 14px; font-weight: 600">Management</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">3</b><span style="font-size: 14px; font-weight: 600">Billing (AR)</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">4</b><span style="font-size: 14px; font-weight: 600">Inventory</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">5</b><span style="font-size: 14px; font-weight: 600">Purchasing</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">6</b><span style="font-size: 14px; font-weight: 600">Reports</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">7</b><span style="font-size: 14px; font-weight: 600">Payroll</span></div>
+        <div style="background: #ffffff; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px"><b style="font-size: 13px; color: #1f5bb5">8</b><span style="font-size: 14px; font-weight: 600">Estimating</span></div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

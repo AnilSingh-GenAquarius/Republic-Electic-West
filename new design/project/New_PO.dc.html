@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New purchase orders</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1f5bb5;text-decoration:none}a:hover{color:#163f80}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #142033; background: #f4f6fa; min-height: 900px; display: flex; flex-direction: column">
+
+  <header style="background: #0f1b2d; color: #ffffff; padding: 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px; min-height: 60px">
+    <b style="letter-spacing: .06em; font-size: 14px">STAFFWARE</b>
+    <span style="color: #8ea2be">/</span>
+    <span style="font-weight: 600">Purchasing</span>
+    <a href="#" style="margin-left: auto; height: 38px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 10px; background: #1f5bb5; color: #ffffff; font-weight: 600; font-size: 14px">New purchase order</a>
+  </header>
+
+  <main style="padding: 24px 28px; display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; max-width: 1400px; box-sizing: border-box; width: 100%">
+    <section style="flex: 1 1 420px; max-width: 520px; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <label style="display: flex; align-items: center; gap: 8px; border: 1px solid #d3dbe7; border-radius: 10px; padding: 0 10px; height: 40px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f5f75" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span style="position: absolute; left: -9999px">Search purchase orders</span>
+        <input type="search" placeholder="PO #, vendor, item, job…" style="flex: 1; border: 0; font: inherit; font-size: 14px; outline: none">
+      </label>
+      <div role="group" aria-label="Status" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <button type="button" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-size: 13px; font-weight: 600">All</button>
+        <button type="button" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13px">Open</button>
+        <button type="button" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13px">Back-ordered</button>
+        <button type="button" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13px">Received</button>
+        <button type="button" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 13px">Not invoiced</button>
+      </div>
+      <div style="display: flex; flex-direction: column">
+        <a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-radius: 10px; background: #e6eefb; color: #142033"><span style="display: flex; flex-direction: column; gap: 2px"><b>PO 18030</b><span style="font-size: 13px; color: #3d4c61">Granite Electrical Supply · REW</span></span><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-size: 13px; color: #3d4c61">2026-09-30</span><span style="font-size: 12px; font-weight: 700; color: #1d6b42; background: #e3f4ea; padding: 3px 8px; border-radius: 999px">Received</span></span></a>
+        <a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-bottom: 1px solid #eef2f7; color: #142033"><span style="display: flex; flex-direction: column; gap: 2px"><b>PO 16220</b><span style="font-size: 13px; color: #3d4c61">Wesco Distribution · REW</span></span><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-size: 13px; color: #3d4c61">2024-11-25</span><span style="font-size: 12px; font-weight: 700; color: #1d6b42; background: #e3f4ea; padding: 3px 8px; border-radius: 999px">Received</span></span></a>
+        <a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; border-bottom: 1px solid #eef2f7; color: #142033"><span style="display: flex; flex-direction: column; gap: 2px"><b>PO 14835</b><span style="font-size: 13px; color: #3d4c61">Granite Electrical Supply · BAY</span></span><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-size: 13px; color: #3d4c61">2023-09-27</span><span style="font-size: 12px; font-weight: 700; color: #1d6b42; background: #e3f4ea; padding: 3px 8px; border-radius: 999px">Received</span></span></a>
+        <a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 12px; color: #142033"><span style="display: flex; flex-direction: column; gap: 2px"><b>PO [number]</b><span style="font-size: 13px; color: #3d4c61">[Vendor] · REI</span></span><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-size: 13px; color: #3d4c61">[date]</span><span style="font-size: 12px; font-weight: 700; color: #8a5300; background: #fff1dc; padding: 3px 8px; border-radius: 999px">Back-ordered</span></span></a>
+      </div>
+    </section>
+
+    <section style="flex: 999 1 560px; min-width: 0; background: #ffffff; border: 1px solid #e1e7ef; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start">
+        <div><h1 style="margin: 0; font-size: 22px; font-weight: 800">PO 18030</h1><p style="margin: 4px 0 0; color: #4f5f75; font-size: 14px">Granite Electrical Supply · Division REW · Ordered 2026-09-30</p></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 14px">Print</button>
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 14px">Receive</button>
+          <button type="button" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #d3dbe7; background: #ffffff; font: inherit; font-size: 14px">Enter vendor bill</button>
+          <button type="button" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #1f5bb5; color: #ffffff; font: inherit; font-weight: 600; font-size: 14px">Post to inventory…</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums">
+          <thead><tr style="text-align: left; color: #4f5f75; font-size: 12.5px">
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Item</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef">Description</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Ordered</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Received</th>
+            <th style="padding: 10px 8px; border-bottom: 1px solid #e1e7ef; text-align: right">Unit cost</th>
+          </tr></thead>
+          <tbody><tr>
+            <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; font-weight: 600">BX-MT-1G-HB-EX</td>
+            <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7">1G metal handy box EXT w/ 1/2" KO's, 1-7/8" deep</td>
+            <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">100 ea</td>
+            <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">100 ea</td>
+            <td style="padding: 11px 8px; border-bottom: 1px solid #eef2f7; text-align: right">$2.9275</td>
+          </tr></tbody>
+        </table>
+      </div>
+      <div style="background: #f6f8fc; border: 1px solid #e1e7ef; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+        <b style="font-size: 14px">Price history · BX-MT-1G-HB-EX</b>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; font-size: 13.5px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #4f5f75">Granite · 2026-09-30</span><b>$2.9275</b></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #4f5f75">Wesco · 2024-11-25</span><b>$2.0006</b></div>
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #4f5f75">Granite · 2023-09-27</span><b>$3.5600</b></div>
+        </div>
+        <span style="font-size: 12.5px; color: #4f5f75">Shown while you add items, so buyers compare vendors without opening a separate report.</span>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

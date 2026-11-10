@@ -1,0 +1,83 @@
+const USER_KEY = 'sw_user';
+const REMEMBER_USER_KEY = 'sw_remember_username';
+
+// The login token is an HttpOnly cookie set by the server — page scripts never see it, so nothing secret is
+// kept in localStorage / sessionStorage. Only the display name and module list (used to draw menus) are
+// stored; the server re-checks access on every request.
+const stores = () => {
+  const out = [];
+  try { out.push(localStorage); } catch { /* blocked */ }
+  try { out.push(sessionStorage); } catch { /* blocked */ }
+  return out;
+};
+const readKey = (k) => {
+  for (const s of stores()) { const v = s.getItem(k); if (v != null) return v; }
+  return null;
+};
+
+export const session = {
+  get loggedIn() { return !!session.user; },
+  get user() {
+    try { return JSON.parse(readKey(USER_KEY)); } catch { return null; }
+  },
+  save(user, remember = true) {
+    session.clear();
+    const [local, sess] = stores();
+    (remember ? local : sess || local)?.setItem(USER_KEY, JSON.stringify(user));
+  },
+  clear() {
+    for (const s of stores()) { s.removeItem(USER_KEY); s.removeItem('sw_token'); }
+  },
+  async logout() {
+    try { await fetch('/api/auth/logout', { method: 'POST', headers: CLIENT_HEADERS, credentials: 'same-origin' }); } catch { /* offline */ }
+    session.clear();
+  },
+  get rememberedUsername() {
+    try { return localStorage.getItem(REMEMBER_USER_KEY) || ''; } catch { return ''; }
+  },
+  set rememberedUsername(v) {
+    try { v ? localStorage.setItem(REMEMBER_USER_KEY, v) : localStorage.removeItem(REMEMBER_USER_KEY); } catch { /* ignore */ }
+  },
+};
+
+// The API refuses any request without this header (blocks other sites and pasted /api URLs).
+export const CLIENT_HEADERS = { 'X-Staffware-Client': '1' };
+
+// Raw fetch for file downloads — same session cookie and header as api().
+export async function apiBlob(path) {
+  const res = await fetch(`/api${path}`, { headers: CLIENT_HEADERS, credentials: 'same-origin' });
+  if (res.status === 401) { session.clear(); window.location.href = '/login'; }
+  if (!res.ok) throw new Error('Export failed');
+  return res.blob();
+}
+
+export async function api(path, { method = 'GET', body, params } = {}) {
+  let url = `/api${path}`;
+  if (params) {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    ).toString();
+    if (qs) url += `?${qs}`;
+  }
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...CLIENT_HEADERS,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'same-origin',
+    });
+  } catch {
+    throw new Error('Cannot reach the server. Check your connection and that the Staffware API is running.');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && path !== '/auth/login') {
+    session.clear();
+    window.location.href = '/login';
+  }
+  if (!res.ok) throw Object.assign(new Error(data.error || `Request failed (${res.status})`), { status: res.status, data });
+  return data;
+}
