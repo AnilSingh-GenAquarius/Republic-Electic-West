@@ -24,7 +24,7 @@ export default function AccountDetail() {
   const [meta, setMeta] = useState(null)
   const [contacts, setContacts] = useState([])
   const [zones, setZones] = useState([])
-  const [lookups, setLookups] = useState({ contractTerms: [], monitoringTypes: [], phoneTypes: [] })
+  const [lookups, setLookups] = useState({ contractTerms: [], monitoringTypes: [], phoneTypes: [], panelTypes: [], cancellationReasons: [], cities: [] })
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
   const [saving, setSaving] = useState(false)
@@ -119,7 +119,7 @@ export default function AccountDetail() {
       <form className="card form" onSubmit={save}>
         <fieldset>
           <legend>Account</legend>
-          <label>Account #<input type="number" {...f('AccountNumber')} /></label>
+          <label>Account Number<input type="number" {...f('AccountNumber')} /></label>
           <label className="span2">Customer name *<input required maxLength={50} {...f('CustomerName')} /></label>
           <label>Phone<input maxLength={50} {...f('PhoneNumber')} /></label>
           <label className="span2">Email<input type="email" maxLength={50} {...f('Email')} /></label>
@@ -140,7 +140,7 @@ export default function AccountDetail() {
               {lookups.contractTerms.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </label>
-          <label>Monthly value<input maxLength={50} placeholder="$0.00" {...f('MonthlyContractValue')} /></label>
+          <label>Monthly Contract Value<input maxLength={50} placeholder="$0.00" {...f('MonthlyContractValue')} /></label>
           <label>Activation date<input type="date" {...f('ActivationDate')} /></label>
           <label>Renewal date
             <div className="row">
@@ -149,13 +149,13 @@ export default function AccountDetail() {
             </div>
           </label>
           <label>Disconnection date<input type="date" {...f('DisconnectionDate')} /></label>
-          <label className="span2">Cancellation reason<input maxLength={50} {...f('CancellationReason')} /></label>
+          <label className="span2">Cancellation reason<input maxLength={50} list="am-cancel-list" autoComplete="off" {...f('CancellationReason')} /><datalist id="am-cancel-list">{(lookups.cancellationReasons || []).map((v) => <option key={v} value={v} />)}</datalist></label>
         </fieldset>
 
         <fieldset>
           <legend>Service address</legend>
           <label className="span2">Street<input maxLength={50} {...f('ServiceStreet')} /></label>
-          <label>City<input maxLength={50} {...f('ServiceCity')} /></label>
+          <label>City<input maxLength={50} list="am-city-list" autoComplete="off" {...f('ServiceCity')} /></label>
           <label>State<input maxLength={50} {...f('ServiceState')} /></label>
           <label>Zip<input inputMode="numeric" {...f('ServiceZip')} /></label>
           <label>Country<input maxLength={50} {...f('ServiceCountry')} /></label>
@@ -166,7 +166,7 @@ export default function AccountDetail() {
           <fieldset>
             <legend>Mailing address</legend>
             <label className="span2">Street<input maxLength={50} {...f('MailStreet')} /></label>
-            <label>City<input maxLength={50} {...f('MailCity')} /></label>
+            <label>City<input maxLength={50} list="am-city-list" autoComplete="off" {...f('MailCity')} /></label>
             <label>State<input maxLength={50} {...f('MailState')} /></label>
             <label>Zip<input inputMode="numeric" {...f('MailZip')} /></label>
             <label>Country<input maxLength={50} {...f('MailCountry')} /></label>
@@ -175,10 +175,10 @@ export default function AccountDetail() {
 
         <fieldset>
           <legend>Panel</legend>
-          <label>Panel type<input maxLength={50} {...f('PanelType')} /></label>
-          <label className="span2">Panel info<input maxLength={255} {...f('PanelInfo')} /></label>
-          <label>Permit #<input maxLength={255} {...f('PermitNumber')} /></label>
-          <label className="span3">Notes<textarea rows={3} maxLength={255} {...f('AccountNotes')} /></label>
+          <label>Panel type<input maxLength={50} list="am-panel-list" autoComplete="off" {...f('PanelType')} /><datalist id="am-panel-list">{(lookups.panelTypes || []).map((v) => <option key={v} value={v} />)}</datalist></label>
+          <label className="span2">Panel information<input maxLength={255} {...f('PanelInfo')} /></label>
+          <label className="span3">Account Notes<textarea rows={3} maxLength={255} {...f('AccountNotes')} /></label>
+        <datalist id="am-city-list">{(lookups.cities || []).map((v) => <option key={v} value={v} />)}</datalist>
         </fieldset>
 
         {error && <ErrorState message={error} />}

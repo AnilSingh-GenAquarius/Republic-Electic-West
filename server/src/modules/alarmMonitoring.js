@@ -53,12 +53,16 @@ const ACCOUNT_WRITE = { ...ACCOUNT, columns: [...ACCOUNT.columns, 'ContractTerms
 
 // ---- Lookups ----
 router.get('/lookups', h(async (req, res) => {
-  const [contractTerms, monitoringTypes, phoneTypes] = await Promise.all([
+  const [contractTerms, monitoringTypes, phoneTypes, panelTypes, cancellationReasons, cities] = await Promise.all([
     query('SELECT ContractTermsID AS id, ContractTerms AS name, LengthMonths, StatusActive FROM LsAmContractTerms ORDER BY ContractTermsID'),
     query('SELECT MonitoringTypeID AS id, MonitoringType AS name FROM LsAmMonitoringType ORDER BY MonitoringTypeID'),
     query('SELECT PhoneTypeID AS id, PhoneType AS name FROM LsPhoneType ORDER BY PhoneTypeID'),
+    // Same lists the Access form used: values already on file, trimmed and de-duplicated
+    query("SELECT DISTINCT LTRIM(RTRIM(PanelType)) AS v FROM AmAccount WHERE LTRIM(RTRIM(ISNULL(PanelType, ''))) <> '' ORDER BY v"),
+    query("SELECT DISTINCT LTRIM(RTRIM(CancellationReason)) AS v FROM AmAccount WHERE LTRIM(RTRIM(ISNULL(CancellationReason, ''))) <> '' ORDER BY v"),
+    query("SELECT LTRIM(RTRIM(ServiceCity)) AS v FROM AmAccount WHERE LTRIM(RTRIM(ISNULL(ServiceCity, ''))) <> '' UNION SELECT LTRIM(RTRIM(MailCity)) FROM AmAccount WHERE LTRIM(RTRIM(ISNULL(MailCity, ''))) <> '' ORDER BY v"),
   ]);
-  res.json({ contractTerms, monitoringTypes, phoneTypes });
+  res.json({ contractTerms, monitoringTypes, phoneTypes, panelTypes: panelTypes.map((r) => r.v), cancellationReasons: cancellationReasons.map((r) => r.v), cities: cities.map((r) => r.v) });
 }));
 
 // ---- Accounts ----
