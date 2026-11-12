@@ -1,10 +1,20 @@
-const sql = require('mssql/msnodesqlv8');
+// Local Windows: ODBC driver with the Windows login (DB_CONNECTION). Hosted (Azure): standard driver with a SQL login
+// (DB_SERVER, DB_NAME, DB_USER, DB_PASSWORD). The hosted driver needs no native/Windows pieces.
+const HOSTED = !!process.env.DB_SERVER;
+const sql = HOSTED ? require('mssql') : require('mssql/msnodesqlv8');
 
 let poolPromise;
 
 function getPool() {
   if (!poolPromise) {
-    poolPromise = new sql.ConnectionPool({
+    poolPromise = new sql.ConnectionPool(HOSTED ? {
+      server: process.env.DB_SERVER,
+      database: process.env.DB_NAME || 'StaffwareSample',
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      options: { encrypt: true },
+      pool: { max: 10 },
+    } : {
       connectionString: process.env.DB_CONNECTION,
       options: { trustedConnection: true },
     }).connect();

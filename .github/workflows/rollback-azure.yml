@@ -1,0 +1,53 @@
+# Roll back the Azure web app to an earlier version, from GitHub.
+#
+# How to use: GitHub > Actions > "Roll back Azure deployment" > Run workflow, then type the commit to go back to:
+#   - leave it as HEAD~1 to deploy the commit just before the latest one on main, or
+#   - paste a commit id (SHA) from the repository's commit history, or a tag name.
+# The workflow builds that version from its own code and deploys it, then checks the site is healthy.
+# Only the app is rolled back. The Azure database is not changed.
+name: Roll back Azure deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit id (SHA), tag or branch to deploy. HEAD~1 = the commit before the latest on main.'
+        required: true
+        default: 'HEAD~1'
+        type: string
+
+concurrency:
+  group: azure-deploy
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.r.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Work out which commit to deploy
+        id: r
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          sha=$(git rev-parse --verify "$REF^{commit}" 2>/dev/null || git rev-parse --verify "origin/$REF^{commit}")
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Rolling back to: $(git log -1 --format='%h %s (%an, %ad)' "$sha")" | tee -a "$GITHUB_STEP_SUMMARY"
+
+  rollback:
+    needs: resolve
+    uses: ./.github/workflows/azure-build-deploy.yml
+    with:
+      ref: ${{ needs.resolve.outputs.sha }}
+      label: manual-rollback
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read

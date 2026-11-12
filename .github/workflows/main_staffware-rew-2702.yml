@@ -1,5 +1,10 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# Deploy to Azure Web App - staffware-rew-2702 on every push to main (or by hand from the Actions tab).
+# The build and deploy steps live in azure-build-deploy.yml.
+# If the new version fails to deploy or the site does not come back healthy, the previous version of main
+# is deployed again automatically (the "rollback" job). To go back to any older version by hand, use the
+# "Roll back Azure deployment" workflow.
+# Sign-in uses the identity that Azure's Deployment Center created (no password stored).
+# App settings (database login, session secret, ...) live in Azure, not in the repo.
 
 name: Build and deploy Node.js app to Azure Web App - staffware-rew-2702
 
@@ -9,51 +14,30 @@ on:
       - 'main'
   workflow_dispatch:
 
+concurrency:
+  group: azure-deploy
+  cancel-in-progress: false
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: .
-
   deploy:
-    runs-on: ubuntu-latest
-    needs: build
+    uses: ./.github/workflows/azure-build-deploy.yml
+    with:
+      ref: ${{ github.sha }}
+      label: deploy
+    secrets: inherit
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7DBCAD82A3604C86B5D3B5DDA60ED392 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F15D363E4FC041F2B8C1D09C28C2180B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C19D801942FF4595A75962A0B055D3E8 }}
-
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'staffware-rew-2702'
-          slot-name: 'Production'
-          package: .
-          
+  # Runs only when the deploy above failed. Re-deploys the commit that was on main before this push.
+  rollback:
+    needs: deploy
+    if: ${{ failure() && github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' }}
+    uses: ./.github/workflows/azure-build-deploy.yml
+    with:
+      ref: ${{ github.event.before }}
+      label: rollback
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read

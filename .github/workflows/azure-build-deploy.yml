@@ -1,0 +1,102 @@
+# Reusable job: build one version of the code (React client + Node server) and deploy it to Azure Web App staffware-rew-2702.
+# Called by the push workflow (main_staffware-rew-2702.yml) and by the rollback workflow (rollback-azure.yml).
+# `ref` = the commit / tag / branch to build and deploy.
+name: Azure build and deploy (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit SHA, tag or branch to deploy
+        required: true
+        type: string
+      label:
+        description: Short name that keeps artifact names unique within one run (deploy or rollback)
+        required: false
+        default: deploy
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout ${{ inputs.ref }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Make sure this version can run on Azure
+        run: |
+          if ! grep -q "HOSTED" server/src/db.js; then
+            echo "::error::This version predates the Azure database support (server/src/db.js) and cannot be deployed to Azure. Pick a newer commit."
+            exit 1
+          fi
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Build client (normal build, no demo mode)
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+          rm -f dist/demo-data.json
+
+      - name: Assemble the package (server + built client)
+        run: |
+          mkdir -p package/server package/client
+          cp -r server/src server/package.json server/package-lock.json package/server/
+          cp -r client/dist package/client/dist
+          cd package/server
+          # the hosted database driver is pure JavaScript; the Windows-only driver is optional and skipped
+          npm ci --omit=dev --omit=optional --ignore-scripts
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app-${{ inputs.label }}-${{ github.run_attempt }}
+          path: package
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app-${{ inputs.label }}-${{ github.run_attempt }}
+          path: package
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7DBCAD82A3604C86B5D3B5DDA60ED392 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_F15D363E4FC041F2B8C1D09C28C2180B }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C19D801942FF4595A75962A0B055D3E8 }}
+          # the identity only has access to this one web app, so it cannot list subscriptions
+          allow-no-subscriptions: true
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'staffware-rew-2702'
+          slot-name: 'Production'
+          package: package
+
+      - name: Check the site is up
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://staffware-rew-2702.azurewebsites.net/api/health" || true)
+            echo "health $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 15
+          done
+          echo "::error::The site did not come back healthy after deploying ${{ inputs.ref }}"
+          exit 1

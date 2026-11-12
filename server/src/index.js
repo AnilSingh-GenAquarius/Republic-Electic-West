@@ -8,7 +8,7 @@ checkSecret();
 
 const app = express();
 app.disable('x-powered-by');
-if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY); // set when running behind IIS / a reverse proxy
+if (process.env.TRUST_PROXY) app.set('trust proxy', /^\d+$/.test(process.env.TRUST_PROXY) ? Number(process.env.TRUST_PROXY) : process.env.TRUST_PROXY); // set when running behind IIS / a reverse proxy
 app.use(securityHeaders);
 app.use(parseCookies);
 app.use('/api', apiGuard);
