@@ -846,6 +846,8 @@ a.mod-item:hover { background: var(--surface-3); text-decoration: none; }
    Dashboard v3 (R3) — full-width attention table, module tiles,
    chart summary strips. Everything is scoped to the dashboard page.
    ========================================================================== */
+.page.dashboard { max-width: none; } /* dashboard uses the full screen width; other pages keep the 1480px cap */
+.dashboard .feed { overflow-x: hidden; }
 .dashboard .welcome-overview { display: flex; align-items: center; gap: 10px; }
 .dashboard .dash-refresh { width: 32px; padding: 0; justify-content: center; border: 1px solid var(--border-strong); }
 .dashboard .spin { animation: dash-spin 1s linear infinite; }
