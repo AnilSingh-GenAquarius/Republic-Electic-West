@@ -1,8 +1,8 @@
 // Alarm monitoring reports — the report buttons on the Access SwitchAM switchboard:
-// AmAccountsCreated, AmAccountsCreatedYear, AmAccountsCancelled, AmAccountsExpiring, AmAccountsExpiringMonthly.
+// AmAccountInfo, AmAccountInfoTech (one account: pick it, then open the printable sheet), AmAccountsCreated, AmAccountsCreatedYear, AmAccountsCancelled, AmAccountsExpiring, AmAccountsExpiringMonthly.
 import { Fragment, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { BarChart3, CalendarClock, CalendarX2, Download, Printer, Repeat, UserPlus } from 'lucide-react'
+import { BarChart3, CalendarClock, CalendarX2, Download, FileText, Printer, Repeat, Search, UserPlus, Wrench } from 'lucide-react'
 import { api } from '../../api'
 import { fmtDate } from '../../format'
 import { EmptyState, ErrorState, PageHeader, SkeletonRows } from '../../components/ui'
@@ -10,6 +10,8 @@ import { download } from '../po/shared'
 import AmTabs from './AmTabs'
 
 const REPORTS = [
+  { key: 'info', label: 'Account information', icon: FileText, account: true, text: 'Full account sheet with zones and call list (Access report Account information)' },
+  { key: 'tech', label: 'Account info tech', icon: Wrench, account: true, text: 'Technician sheet: service address, panel type, premises phone (Access report Account info tech)' },
   { key: 'created', label: 'Accounts created', icon: UserPlus, dates: true, type: true, text: 'New accounts by monitoring type and month' },
   { key: 'created-year', label: 'Accounts created per year', icon: BarChart3, dates: true, type: true, text: 'New accounts per year' },
   { key: 'cancelled', label: 'Accounts cancelled', icon: CalendarX2, dates: true, type: true, text: 'Cancelled accounts by type, month and reason' },
@@ -33,7 +35,9 @@ export default function AmReports() {
 
   useEffect(() => { api('/am/lookups').then((l) => setTypes(l.monitoringTypes)).catch(() => {}) }, [])
   useEffect(() => {
-    setError(''); setD(null); setLoading(true)
+    setError(''); setD(null)
+    if (rep.account) { setLoading(false); return }
+    setLoading(true)
     const params = { ...(rep.dates ? { from: f.from, to: f.to } : {}), ...(rep.type ? { monitoringTypeId: f.monitoringTypeId } : {}) }
     api(`/am/reports/${rep.key}`, { params }).then(setD).catch((e) => setError(e.message)).finally(() => setLoading(false))
   }, [rep.key, f.from, f.to, f.monitoringTypeId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -56,8 +60,8 @@ export default function AmReports() {
     <div className="page">
       <PageHeader title="Alarm monitoring reports" subtitle="The report buttons from the Access Alarm Monitoring switchboard"
         actions={<>
-          <button className="btn" disabled={!d?.rows?.length} onClick={csv}><Download size={15} /> CSV</button>
-          <button className="btn primary" disabled={!d} onClick={() => window.print()}><Printer size={15} /> Print</button>
+          {!rep.account && <button className="btn" disabled={!d?.rows?.length} onClick={csv}><Download size={15} /> CSV</button>}
+          {!rep.account && <button className="btn primary" disabled={!d} onClick={() => window.print()}><Printer size={15} /> Print</button>}
         </>} />
       <AmTabs />
 
@@ -68,6 +72,8 @@ export default function AmReports() {
           </button>
         ))}
       </div>
+
+      {rep.account && <AccountChooser kind={rep.key} label={rep.label} text={rep.text} />}
 
       {(rep.dates || rep.type) && (
         <div className="filters no-print">
@@ -84,7 +90,7 @@ export default function AmReports() {
         </div>
       )}
 
-      <article className="card am-report">
+      {!rep.account && <article className="card am-report">
         <header className="am-report-head">
           <h2>{rep.label}</h2>
           <div className="muted small">
@@ -97,8 +103,52 @@ export default function AmReports() {
         {loading && <SkeletonRows rows={6} cols={4} />}
         {d && !d.rows.length && <EmptyState icon={rep.icon} title="Nothing to report">No accounts match these filters.</EmptyState>}
         {d && d.rows.length > 0 && <ReportBody rep={rep.key} d={d} />}
-      </article>
+      </article>}
     </div>
+  )
+}
+
+// Account information / Account info tech are single-account sheets: find the account, then open its printable sheet.
+function AccountChooser({ kind, label, text }) {
+  const [q, setQ] = useState('')
+  const [rows, setRows] = useState(null)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    const t = setTimeout(() => {
+      api('/am/accounts', { params: { search: q, status: 'all', pageSize: 12 } })
+        .then((r) => { setRows(r.rows); setError('') })
+        .catch((e) => setError(e.message))
+    }, 250)
+    return () => clearTimeout(t)
+  }, [q])
+  const to = (id) => `/am/accounts/${id}/${kind === 'tech' ? 'print-tech' : 'print'}`
+  return (
+    <article className="card">
+      <h2>{label}</h2>
+      <p className="muted">{text}. Choose an account to open its sheet, then use Print (or Email) there.</p>
+      <label className="search-wrap" style={{ maxWidth: 420, display: 'block', marginBottom: 12 }}>
+        <Search size={15} />
+        <input type="search" autoFocus placeholder="Search account #, name, street, city, phone…" value={q} onChange={(e) => setQ(e.target.value)} />
+      </label>
+      {error && <ErrorState message={error} />}
+      {rows && !rows.length && <EmptyState icon={FileText} title="No accounts found">Try a different search.</EmptyState>}
+      {rows && rows.length > 0 && (
+        <div className="table-wrap"><table className="grid clickable">
+          <thead><tr><th>Acct #</th><th>Customer</th><th>Service address</th><th>Status</th><th /></tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.AccountID}>
+                <td>{r.AccountNumber}</td><td>{r.CustomerName}</td>
+                <td>{[r.ServiceStreet, r.ServiceCity, r.ServiceState].filter(Boolean).join(', ')}</td>
+                <td>{r.DisconnectionDate ? <span className="muted">Disconnected {fmtDate(r.DisconnectionDate)}</span> : 'Active'}</td>
+                <td className="num"><Link className="btn small primary" to={to(r.AccountID)}><Printer size={13} /> Open sheet</Link></td>
+              </tr>
+            ))}
+          </tbody>
+        </table></div>
+      )}
+      {rows && <p className="muted small" style={{ marginTop: 8 }}>Showing up to 12 matches — type to narrow the list.</p>}
+    </article>
   )
 }
 

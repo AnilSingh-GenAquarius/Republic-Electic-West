@@ -2,6 +2,8 @@
 
 Web replacement for the StaffWareDesign.accdb Access front end. It uses the same SQL Server database (`StaffwareSample`) and the same `LoginUsers` logins and module permissions.
 
+New to the software? See the [simple StaffWare user guide with workflow diagrams](docs/APP_OVERVIEW.md).
+
 ```
 web code/
   server/   Node.js + Express API (talks to SQL Server via Windows auth, ODBC Driver 17)
@@ -47,11 +49,12 @@ cd ../server && npm start      # serves the UI and API on http://localhost:4000
 |---|---|---|
 | AM | Alarm Monitoring | ✅ Accounts (search/filter/sort/paging, create/edit/delete), call-list contacts, zones, renewals-due report, dashboard |
 | PR | Payroll | ✅ Piece timecard, hourly timecard, append hourly, post payroll (→ PrLaborPaid + JcLotItem), timecards review, employees, pay periods, labor-paid reports + CSV |
-| JS, SC, FM, TM, IC, PO, AR, MG | Job setup, Scheduling, Foreman, T&M, Inventory, Purchasing, AR, Management | ✅ |
+| JS, SC, FM, TM, IC, PO, MG | Job setup, Scheduling, Foreman, T&M, Inventory, Purchasing, Management | ✅ |
+| AR | Accounts receivable | ✅ Process billing, post billing, invoices, Fix billing code, snapshot-in-use; all 18 Access reports on one card-style Reports page (like Management) (see [docs/AR_ACCESS_TO_WEB_MAP.md](docs/AR_ACCESS_TO_WEB_MAP.md)) |
 | CS | Customer service | ✅ Homeowners, properties, tickets/appointments (techs, findings, material), schedule + calendar, quotes, call notes, setup, 20 reports |
 | PM | Plan management | ✅ Customers/jobs/bids, plans, packs, material & values, copy/bulk edit, price updates, 12 reports |
 | ES | Estimating | ✅ Customers/jobs/bids, plans, assemblies, option packs, material bids, transfer to PM, master assemblies, items, research, job log, 3 reports |
-| CM | Contract management | ✅ Contracts, addenda, diary, bid links, contract values, revised lot values, latest changes, 20 reports |
+| CM | Contract management | ✅ Contracts, addenda, diary, bid links, contract values, revised contract values, latest changes, 20 reports |
 | SA | Sales | ✅ Leads with homeowners and phones, 8 reports |
 | CX | Cox cable | ✅ Jobs, assessors, plans, material, items, billing info, material requests, billing runs, 12 reports |
 | PU | Public | ✅ Lot finder, job lists, lot and plan data, start-pack labor (11 reports, every user) |

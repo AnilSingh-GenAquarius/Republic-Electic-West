@@ -62,6 +62,7 @@ router.get('/to-bill', h(async (req, res) => {
             (SELECT SUM(x.Quantity * x.ValueEa) FROM (${LINES}) x WHERE x.LotId = l.LotID) AS Contract,
             (SELECT SUM(${MV('b.BillTotal')}) FROM ArBilling b WHERE b.LotId = l.LotID) AS Billed,
             (SELECT COUNT(*) FROM ArBilling b WHERE b.LotId = l.LotID) AS Invoices,
+            (SELECT COUNT(DISTINCT pp.PackId) FROM PrLaborPaid pp WHERE pp.LotId = l.LotID) AS PaidPacks,
             (SELECT SUM(CASE WHEN ISNULL(q.BillValue,0) <> 0 THEN q.BillValue ELSE ISNULL(q.Quantity,0) * ISNULL(q.ValueEa,0) * ISNULL(q.BillPercent,0) / 100 END) FROM ArPreBillPack q WHERE q.LotId = l.LotID) AS Queued
        FROM JsLot l JOIN JsJob j ON j.JobId = l.JobId LEFT JOIN PmPlan pl ON pl.PmPlanID = l.PmPlanId LEFT JOIN JsPhase ph ON ph.PhaseID = l.PhaseId
       WHERE j.CustId = @cust AND j.DivisionId = @div AND l.EndDate IS NULL AND l.StatusId = 1 AND (@job IS NULL OR j.JobId = @job)
@@ -394,5 +395,161 @@ router.get('/reports/wip', h(async (req, res) => {
   const t = rows.reduce((a, r) => ({ Contract: a.Contract + (r.Contract || 0), Billed: a.Billed + (r.Billed || 0), Labor: a.Labor + (r.LaborPaid || 0), Material: a.Material + (r.MaterialPosted || 0) }), { Contract: 0, Billed: 0, Labor: 0, Material: 0 });
   res.json({ rows, totals: t });
 }));
+
+// ---------------------------------------------------------------------------
+// Customer snapshots in use (Access SwitchARsubBillProcess: DIV | Customer | user)
+// Access groups ArTempBillLot by division, customer and user. The web keeps its own snapshot in ArPreBillLot, so both are listed.
+// ---------------------------------------------------------------------------
+router.get('/snapshots', h(async (req, res) => {
+  const rows = await query(
+    `SELECT s.DivisionId, s.CustId, ISNULL(c.CustName, MAX(s.Customer)) AS CustName, s.UserSelect, SUM(s.Lots) AS Lots, MIN(s.Source) AS Source
+       FROM (SELECT DivisionId, CustId, Customer, UserSelect, COUNT(*) AS Lots, 'prebill' AS Source FROM ArPreBillLot GROUP BY DivisionId, CustId, Customer, UserSelect
+             UNION ALL SELECT DivisionId, CustId, Customer, UserSelect, COUNT(*), 'temp' FROM ArTempBillLot GROUP BY DivisionId, CustId, Customer, UserSelect) s
+       LEFT JOIN JsCustomer c ON c.CustID = s.CustId
+      GROUP BY s.DivisionId, s.CustId, c.CustName, s.UserSelect ORDER BY s.DivisionId, ISNULL(c.CustName, MAX(s.Customer)), s.UserSelect`);
+  res.json({ rows, me: req.user?.username || null });
+}));
+
+// ---------------------------------------------------------------------------
+// Fix billing code (Access macro ArBillCodeFix, queries qryArBillCode01..07)
+// Billing lines saved without a schedule stage / work (ScheduleStageId = 0 and WorkId = 0, ComboId = PackId) get their stage and work
+// copied from the lot's contract values (JsValue) of the same pack: ComboId = PackId & "." & stage & work.
+// ---------------------------------------------------------------------------
+const FIX_SRC = `SELECT j.JobId, l.LotID, p.PackID, v.ScheduleStageId, v.WorkId, ${MV('v.Contract')} AS Contract
+    FROM JsLot l JOIN JsPack p ON p.LotId = l.LotID JOIN JsValue v ON v.PackId = p.PackID JOIN JsJob j ON j.JobId = l.JobId WHERE j.DivisionId = @div`;   // qryArBillCode01Select
+const FIX_BASE = 'bi.ScheduleStageId = 0 AND bi.WorkId = 0 AND S.ScheduleStageId IS NOT NULL AND S.WorkId IS NOT NULL';
+const FIX_STEPS = [
+  { key: 'std', query: 'qryArBillCode02FixHvStd', label: 'Standard packs: Standard rough (stage 2 / work 2) and Standard trim (stage 3 / work 2)',
+    cond: `${FIX_BASE} AND ((bi.PackName = 'Standard rough' AND S.ScheduleStageId = 2 AND S.WorkId = 2) OR (bi.PackName = 'Standard trim' AND S.ScheduleStageId = 3 AND S.WorkId = 2))` },
+  { key: 'opt-total', query: 'qryArBillCode03FixOpt', label: 'Option packs: contract value matches the invoiced total',
+    cond: `${FIX_BASE} AND bi.PackName NOT LIKE 'Standard%' AND S.Contract = ${MV('bi.ItemTotal')}` },
+  { key: 'opt-each', query: 'qryArBillCode04FixOpt', label: 'Option packs: contract value matches the invoiced value each',
+    cond: `${FIX_BASE} AND bi.PackName NOT LIKE 'Standard%' AND S.Contract = ${MV('bi.ValueEa')}` },
+  { key: 'opt-qty', query: 'qryArBillCode06FixOpt', label: 'Option packs: contract value matches the total per unit (quantity below 0 or above 1)',
+    cond: `${FIX_BASE} AND bi.PackName NOT LIKE 'Standard%' AND (bi.Quantity < 0 OR bi.Quantity > 1) AND S.Contract = ${MV('bi.ItemTotal')} / NULLIF(bi.Quantity, 0)` },
+];
+const fixDiv = async (v) => {
+  const div = String(v || '').trim();
+  if (!div) throw bad('Choose a division (Access filter I)');
+  const d = await query('SELECT DivisionID FROM LsDivision WHERE DivisionID = @d', { d: div });
+  if (!d[0]) throw bad('Unknown division', 404);
+  return d[0].DivisionID;
+};
+class Rollback extends Error {}
+
+// One pass over all steps in order (later steps see what the earlier ones changed). The preview runs it and rolls back.
+async function runFixSteps(tx, div) {
+  const out = [];
+  for (const st of FIX_STEPS) {
+    const cand = `WITH S AS (${FIX_SRC}), C AS (
+        SELECT bi.BillItemID, S.ScheduleStageId AS sid, S.WorkId AS wid FROM ArBillingItem bi JOIN ArBilling b ON b.BillID = bi.BillId
+          JOIN S ON S.PackID = bi.ComboId AND S.LotID = b.LotId AND S.JobId = b.JobId WHERE ${st.cond}),
+      U AS (SELECT BillItemID, MIN(sid) AS sid, MIN(wid) AS wid, COUNT(DISTINCT CONCAT(sid, '.', wid)) AS n FROM C GROUP BY BillItemID)`;
+    const rows = await query(`${cand}
+      SELECT U.BillItemID, U.n, U.sid AS NewStageId, U.wid AS NewWorkId, b.BillID, b.JobName, b.LotBlock, bi.PackName, bi.Quantity, bi.ValueEa, bi.ItemTotal
+        FROM U JOIN ArBillingItem bi ON bi.BillItemID = U.BillItemID JOIN ArBilling b ON b.BillID = bi.BillId ORDER BY b.JobName, b.LotBlock, bi.PackName`, { div }, tx);
+    const upd = await query(`${cand}
+      UPDATE bi SET ComboId = TRY_CAST(CONCAT(bi.PackId, '.', U.sid, U.wid) AS decimal(18,4)), ScheduleStageId = U.sid, WorkId = U.wid
+        FROM ArBillingItem bi JOIN U ON U.BillItemID = bi.BillItemID WHERE U.n = 1; SELECT @@ROWCOUNT AS n`, { div }, tx);
+    out.push({ key: st.key, query: st.query, label: st.label, candidates: rows.length, fixed: upd[0].n, ambiguous: rows.filter((r) => r.n > 1).length, sample: rows.slice(0, 25) });
+  }
+  return out;
+}
+
+router.get('/fix-code/preview', h(async (req, res) => {
+  const div = await fixDiv(req.query.division);
+  const [src, open] = await Promise.all([
+    query(`SELECT COUNT(*) AS n FROM (${FIX_SRC}) S`, { div }),
+    query(`SELECT COUNT(*) AS n FROM ArBillingItem bi JOIN ArBilling b ON b.BillID = bi.BillId WHERE b.DivisionId = @div AND bi.ScheduleStageId = 0 AND bi.WorkId = 0`, { div }),
+  ]);
+  let steps = [];
+  try { await withTransaction(async (tx) => { steps = await runFixSteps(tx, div); throw new Rollback(); }); } catch (e) { if (!(e instanceof Rollback)) throw e; }
+  res.json({ division: div, contractValues: src[0].n, unfixedLines: open[0].n, steps, total: steps.reduce((a, s) => a + s.fixed, 0) });
+}));
+
+router.post('/fix-code/run', h(async (req, res) => {
+  const div = await fixDiv(req.body?.division);
+  const steps = await withTransaction((tx) => runFixSteps(tx, div));
+  const left = await query(`SELECT COUNT(*) AS n FROM ArBillingItem bi JOIN ArBilling b ON b.BillID = bi.BillId WHERE b.DivisionId = @div AND bi.PackName NOT LIKE 'Standard%' AND bi.ScheduleStageId = 0 AND bi.WorkId = 0`, { div });
+  res.json({ division: div, steps: steps.map(({ sample, ...s }) => s), total: steps.reduce((a, s) => a + s.fixed, 0), manualLeft: left[0].n });
+}));
+
+// Manual fix: invoices of the division that still have option lines without stage/work
+router.get('/fix-code/invoices', h(async (req, res) => {
+  const div = await fixDiv(req.query.division);
+  const rows = await query(`SELECT TOP 300 b.BillID, b.Date, b.CustName, b.JobName, b.LotBlock, COUNT(*) AS Lines
+      FROM ArBilling b JOIN ArBillingItem bi ON bi.BillId = b.BillID
+     WHERE b.DivisionId = @div AND bi.PackName NOT LIKE 'Standard%' AND bi.ScheduleStageId = 0 AND bi.WorkId = 0
+     GROUP BY b.BillID, b.Date, b.CustName, b.JobName, b.LotBlock ORDER BY b.BillID DESC`, { div });
+  res.json({ invoices: rows });
+}));
+// qryArBillCode07FixOpt: the invoice's unfixed option lines with the contract stage/work values of the same pack (candidates)
+router.get('/fix-code/manual', h(async (req, res) => {
+  const div = await fixDiv(req.query.division);
+  const id = int(req.query.invoiceId);
+  if (!id) throw bad('Choose an invoice (Access filter J)');
+  const inv = await query('SELECT BillID, Date, CustName, JobName, LotBlock, DivisionId FROM ArBilling WHERE BillID = @id', { id });
+  if (!inv[0]) throw bad('Invoice not found', 404);
+  if (inv[0].DivisionId !== div) throw bad(`Invoice ${id} belongs to division ${inv[0].DivisionId}, not ${div}`);
+  const items = await query(`SELECT bi.BillItemID, bi.PackName, bi.ComboId, bi.ScheduleStageId, bi.WorkId, bi.Quantity, ${MV('bi.ValueEa')} AS ValueEa, ${MV('bi.ItemTotal')} AS ItemTotal
+      FROM ArBillingItem bi WHERE bi.BillId = @id AND bi.PackName NOT LIKE 'Standard%' AND bi.ScheduleStageId = 0 AND bi.WorkId = 0 ORDER BY bi.PackName, bi.BillItemID`, { id });
+  const cands = items.length ? await query(`WITH S AS (${FIX_SRC})
+      SELECT bi.BillItemID, S.ScheduleStageId, ISNULL(ss.ScheduleStage, '') AS ScheduleStage, S.WorkId, ISNULL(w.WorkType, '') AS WorkType, S.Contract
+        FROM ArBillingItem bi JOIN ArBilling b ON b.BillID = bi.BillId JOIN S ON S.PackID = bi.ComboId AND S.LotID = b.LotId AND S.JobId = b.JobId
+        LEFT JOIN LsScheduleStage ss ON ss.ScheduleStageID = S.ScheduleStageId LEFT JOIN LsWork w ON w.WorkID = S.WorkId
+       WHERE bi.BillId = @id AND bi.PackName NOT LIKE 'Standard%' AND bi.ScheduleStageId = 0 AND bi.WorkId = 0 ORDER BY S.ScheduleStageId, S.WorkId`, { id, div }) : [];
+  res.json({ invoice: inv[0], items: items.map((i) => ({ ...i, options: cands.filter((c) => c.BillItemID === i.BillItemID).map(({ BillItemID, ...c }) => c) })) });
+}));
+router.post('/fix-code/manual', h(async (req, res) => {
+  const div = await fixDiv(req.body?.division);
+  const id = int(req.body?.invoiceId);
+  const fixes = Array.isArray(req.body?.fixes) ? req.body.fixes : [];
+  if (!id) throw bad('Choose an invoice (Access filter J)');
+  if (!fixes.length) throw bad('Choose a schedule stage and work for at least one line');
+  for (const f of fixes) if (!(int(f.billItemId) > 0) || !(int(f.scheduleStageId) > 0) || !(int(f.workId) >= 0)) throw bad('Each fixed line needs a line id, a schedule stage above 0 and a work');
+  const n = await withTransaction(async (tx) => {
+    const inv = await query('SELECT DivisionId FROM ArBilling WHERE BillID = @id', { id }, tx);
+    if (!inv[0]) throw bad('Invoice not found', 404);
+    if (inv[0].DivisionId !== div) throw bad(`Invoice ${id} belongs to division ${inv[0].DivisionId}, not ${div}`);
+    let done = 0;
+    for (const f of fixes) {
+      // same rule as the Access form's AfterUpdate: only when the schedule is above 0, ComboId = ComboId & "." & schedule & work
+      const r = await query(`UPDATE ArBillingItem SET ScheduleStageId = @s, WorkId = @w, ComboId = TRY_CAST(CONCAT(PackId, '.', @s, @w) AS decimal(18,4))
+         WHERE BillItemID = @i AND BillId = @id AND ScheduleStageId = 0 AND WorkId = 0; SELECT @@ROWCOUNT AS n`, { s: int(f.scheduleStageId), w: int(f.workId), i: int(f.billItemId), id }, tx);
+      if (!r[0].n) throw bad(`Line ${f.billItemId} is not an unfixed line of invoice ${id}`, 409);
+      done += r[0].n;
+    }
+    return done;
+  });
+  res.json({ fixed: n });
+}));
+
+// ---------------------------------------------------------------------------
+// Lookups for the shared report filter bar (letters A-M). Sub-lists are filled only when their parent filter is set.
+// ---------------------------------------------------------------------------
+const usd = (n) => `$${(Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const us = (d) => (d ? `${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}/${d.getUTCFullYear()}` : '');
+router.get('/filter-lookups', h(async (req, res) => {
+  const cust = int(req.query.customerId), job = int(req.query.jobId), div = req.query.division ? String(req.query.division) : null;
+  const p = { cust, job, div };
+  const [customers, divisions, jobs, phases, lots, packTypes, plans, invoices, tmOrders] = await Promise.all([
+    query('SELECT c.CustID AS id, c.CustName AS name FROM JsCustomer c ORDER BY c.CustName'),
+    query("SELECT DivisionID AS id, DivisionID + ' – ' + DivisionName AS name FROM LsDivision ORDER BY DivisionID"),
+    query('SELECT TOP 500 j.JobId AS id, j.JobName AS name FROM JsJob j WHERE (@cust IS NULL OR j.CustId = @cust) AND (@div IS NULL OR j.DivisionId = @div) ORDER BY j.JobName', p),
+    job ? query('SELECT PhaseID AS id, Phase AS name FROM JsPhase WHERE JobId = @job ORDER BY PhaseNum, Phase', p) : [],
+    job ? query("SELECT l.LotID AS id, 'Lot ' + ISNULL(l.Lot,'') + ' / Block ' + ISNULL(l.Block,'') + ISNULL(' - ' + NULLIF(l.Address,''),'') AS name FROM JsLot l WHERE l.JobId = @job ORDER BY TRY_CAST(l.Lot AS int), l.Lot, l.Block", p) : [],
+    query('SELECT PackTypeID AS id, PackType AS name FROM LsPackType ORDER BY PackType'),
+    job || cust ? query(`SELECT DISTINCT pl.PmPlanID AS id, pl.PlanNum AS name FROM PmPlan pl JOIN JsLot l ON l.PmPlanId = pl.PmPlanID JOIN JsJob j ON j.JobId = l.JobId
+                         WHERE (@job IS NULL OR j.JobId = @job) AND (@cust IS NULL OR j.CustId = @cust) ORDER BY pl.PlanNum`, p) : [],
+    query(`SELECT TOP 300 b.BillID, b.Date, b.CustName, ${MV('b.BillTotal')} AS Total FROM ArBilling b WHERE (@cust IS NULL OR b.CustomerId = @cust) AND (@div IS NULL OR b.DivisionId = @div) ORDER BY b.BillID DESC`, p),
+    cust || job ? query("SELECT TOP 300 t.TmID AS id, 'TM' + CAST(t.TmID AS varchar(20)) + ISNULL(' ' + t.TmName,'') AS name FROM TmPO t WHERE (@cust IS NULL OR t.CustomerId = @cust) AND (@job IS NULL OR t.JobId = @job) ORDER BY t.TmID DESC", p) : [],
+  ]);
+  res.json({ customers, divisions, jobs, phases, lots, packTypes, plans, tmOrders,
+    invoices: invoices.map((r) => ({ id: r.BillID, name: `#${r.BillID} ${us(r.Date)} ${r.CustName || ''} ${usd(r.Total)}`.replace(/\s+/g, ' ').trim() })) });
+}));
+
+// Access-faithful report families (billing reports; WIP reports) live in their own routers
+router.use(require('./arReportsBilling'));
+router.use(require('./arReportsWip'));
 
 module.exports = router;

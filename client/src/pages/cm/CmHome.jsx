@@ -27,8 +27,8 @@ export default function CmHome() {
   }
   return (
     <div className="page">
-      <PageHeader title="Contract management" subtitle="Contracts and addenda per job, bid contract values, revised lot values and contract reports"
-        actions={<Link className="btn primary" to="/cm/jobs">Contracts <ArrowRight size={15} /></Link>} />
+      <PageHeader title="Contract management" subtitle="Contracts and addenda per job, bid contract values, revised contract values and contract reports"
+        actions={<Link className="btn primary" to="/cm/jobs">Contract Management <ArrowRight size={15} /></Link>} />
       <CmTabs />
       {error && <ErrorState message={error} />}
       {msg && <div className="success-state" style={{ marginBottom: 12 }}><CheckCircle2 size={16} /> {msg}</div>}

@@ -28,6 +28,8 @@ export default function AccountDetail() {
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     if (isNew) {
@@ -85,12 +87,17 @@ export default function AccountDetail() {
     }
   }
 
-  async function remove() {
-    if (!confirm(`Delete account ${form.AccountNumber} – ${form.CustomerName}, including its contacts and zones?`)) return
+  // In-page confirmation (the browser's confirm() popup can be blocked, which made Delete do nothing)
+  async function doDelete() {
+    setDeleting(true); setError('')
     try {
       await api(`/am/accounts/${id}`, { method: 'DELETE' })
       nav('/am/accounts')
-    } catch (err) { setError(err.message) }
+    } catch (err) {
+      setError(err.message)
+      setConfirmDel(false)
+      setDeleting(false)
+    }
   }
 
   const reload = () => load().catch((e) => setError(e.message))
@@ -178,7 +185,7 @@ export default function AccountDetail() {
         {msg && <div className="ok">{msg}</div>}
         <div className="row form-actions">
           <button className="btn primary" disabled={saving}><Save size={15} /> {saving ? 'Saving…' : isNew ? 'Create account' : 'Save changes'}</button>
-          {!isNew && <button type="button" className="btn danger" onClick={remove}><Trash2 size={15} /> Delete account</button>}
+          {!isNew && <button type="button" className="btn danger" onClick={() => { setError(''); setConfirmDel(true) }}><Trash2 size={15} /> Delete account</button>}
           {meta && <span className="muted small">Entered {fmtDate(meta.DateEntered)} by {meta.UserEntered || '—'}</span>}
         </div>
       </form>
@@ -215,6 +222,20 @@ export default function AccountDetail() {
             onChanged={reload}
           />
         </>
+      )}
+
+      {confirmDel && (
+        <div className="dialog-scrim" onClick={() => !deleting && setConfirmDel(false)} onKeyDown={(e) => e.key === 'Escape' && !deleting && setConfirmDel(false)}>
+          <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-title" onClick={(e) => e.stopPropagation()}>
+            <h2 id="del-title"><AlertTriangle size={18} /> Delete this account?</h2>
+            <p><b>{form.AccountNumber} – {form.CustomerName}</b></p>
+            <p className="muted">This also deletes its call-list contacts ({contacts.length}) and zones ({zones.length}). It cannot be undone.</p>
+            <div className="row dialog-actions">
+              <button type="button" className="btn" autoFocus onClick={() => setConfirmDel(false)} disabled={deleting}>Cancel</button>
+              <button type="button" className="btn danger" onClick={doDelete} disabled={deleting}><Trash2 size={15} /> {deleting ? 'Deleting…' : 'Delete account'}</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

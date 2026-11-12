@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Staffware web: project overview</title>
+<style>
+@page { size: A4; margin: 15mm 14mm; }
+body { font-family: "Segoe UI", Arial, sans-serif; color: #142033; font-size: 11px; line-height: 1.45; }
+h1 { font-size: 24px; margin: 0 0 2px; } .sub { color: #4f5f75; font-size: 12px; margin-bottom: 14px; }
+h2 { font-size: 15px; margin: 18px 0 6px; padding-bottom: 3px; border-bottom: 2px solid #1f5bb5; color: #163f80; break-after: avoid; }
+h3 { font-size: 12px; margin: 12px 0 4px; color: #163f80; break-after: avoid; }
+p { margin: 4px 0 8px; } ul { margin: 4px 0 8px 18px; padding: 0; } li { margin-bottom: 3px; }
+table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; }
+th { text-align: left; background: #eef1f7; font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; color: #4f5f75; }
+th, td { border: 1px solid #d7deea; padding: 4px 6px; vertical-align: top; } tr { break-inside: avoid; }
+.note { background: #eaf1fb; border: 1px solid #c7dbf5; border-radius: 6px; padding: 7px 10px; margin: 8px 0; }
+.flow { display: flex; align-items: stretch; gap: 8px; margin: 8px 0; break-inside: avoid; }
+.box { flex: 1; border: 1.5px solid #1f5bb5; border-radius: 8px; padding: 8px 10px; background: #fff; }
+.box b { display: block; font-size: 12px; color: #163f80; margin-bottom: 2px; }
+.box.db { border-color: #1d7a4a; } .box.db b { color: #1d7a4a; }
+.box.dim { border-style: dashed; border-color: #98a2b3; color: #4f5f75; } .box.dim b { color: #4f5f75; }
+.arrow { align-self: center; font-size: 20px; color: #4f5f75; }
+.lane { display: grid; grid-template-columns: 120px 1fr; gap: 8px; margin: 6px 0; break-inside: avoid; }
+.lane > .lab { font-weight: 700; font-size: 10.5px; color: #4f5f75; text-transform: uppercase; letter-spacing: .04em; padding-top: 8px; }
+.lane .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.m { border: 1.5px solid #1f5bb5; border-radius: 6px; padding: 5px 8px; background: #eaf1fb; font-weight: 600; }
+.m small { display: block; font-weight: 400; color: #4f5f75; font-size: 9.5px; }
+.m.g { border-color: #1d7a4a; background: #e8f6ee; } .m.o { border-color: #b26a00; background: #fef4e6; } .m.v { border-color: #6b4fbb; background: #f1ecfc; } .m.s { border-color: #475467; background: #eef1f5; }
+.cap { font-size: 10px; color: #4f5f75; }
+.pb { break-before: page; }
+</style></head><body>
+
+<h1>Staffware on the web</h1>
+<div class="sub">Republic Electric West &middot; Project overview: how the system runs and how the modules work together</div>
+
+<div class="note">Staffware replaces the Microsoft Access screens with a web application. It works on the <b>same SQL Server database</b> and the <b>same logins</b> as today, so no data is moved and Access can keep running side by side while teams switch over, module by module.</div>
+
+<h2>1. How the system runs</h2>
+<div class="flow">
+  <div class="box"><b>1. Browser</b>Staff open the Staffware address in Chrome, Edge or Safari. Nothing is installed on their PCs. They see menus, forms, lists and reports.</div>
+  <div class="arrow">&rarr;</div>
+  <div class="box"><b>2. Staffware server</b>Checks who is logged in and which modules that person may use, applies the same business rules as the Access version, then reads or saves data.</div>
+  <div class="arrow">&rarr;</div>
+  <div class="box db"><b>3. SQL Server database</b>The existing Staffware database. Every form, record and posting is stored here, exactly where Access stores it today.</div>
+</div>
+<div class="flow"><div class="box dim"><b>Microsoft Access (existing)</b>Keeps working against the same database during the roll-out. A record saved in the web app appears in Access, and the other way round.</div></div>
+
+<h3>What happens when someone uses a screen</h3>
+<ul>
+<li><b>Sign in:</b> with the existing Staffware login. The system opens only the modules that login is allowed to use. If a module is switched off for a person, its screens and data are refused, not only hidden.</li>
+<li><b>Open a list or report:</b> the browser asks the server, the server reads the database and returns the rows. Lists can be searched, sorted and paged; reports can be exported to CSV and printed.</li>
+<li><b>Enter or change data:</b> the form checks the entries, the server checks them again, then saves them. Important multi-step actions (post payroll, post billing, transfer a bid) are saved <b>all or nothing</b>, so a failure never leaves half-posted data.</li>
+<li><b>Delete or post:</b> the person is asked to confirm first, and many actions show a preview of what will change.</li>
+<li><b>Every record</b> keeps who entered it and when, the same as Access.</li>
+</ul>
+
+<h3>Security in plain words</h3>
+<ul>
+<li>Login creates a private session that scripts and browser tools cannot read; signing out ends it on the server.</li>
+<li>Access is re-checked continuously: deactivating a login or removing a module takes effect within about half a minute.</li>
+<li>Only the Staffware screens can talk to the server; copied addresses, other websites and tools such as Postman are refused.</li>
+<li>Repeated wrong passwords lock the account for 15 minutes. Error messages never show internal details.</li>
+<li>The program code delivered to the browser is scrambled so it cannot be read in developer tools.</li>
+</ul>
+
+<h3>What it needs to run</h3>
+<table><thead><tr><th>Item</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>SQL Server with the Staffware database</td><td>Holds all data (already in place).</td></tr>
+<tr><td>One server or PC with Node.js and the SQL Server ODBC driver</td><td>Runs the Staffware application. Started with one command, or as a Windows service for production.</td></tr>
+<tr><td>A web address (ideally HTTPS)</td><td>How staff reach it. A company certificate is recommended for live use.</td></tr>
+<tr><td>A web browser on each device</td><td>Nothing else to install. Works on PCs, tablets and phones.</td></tr>
+</tbody></table>
+
+<div class="pb"></div>
+<h2>2. The 18 modules</h2>
+<p>The modules keep the names and codes of the Access switchboard. Each person sees only the modules on their login. <b>Public (PU)</b> is open to every user.</p>
+<table><thead><tr><th>Group</th><th>Module</th><th>What it is for</th></tr></thead><tbody>
+<tr><td rowspan="6"><b>Operations</b></td><td>Job Setup (JS)</td><td>Builders and bill-to addresses, jobs, phases and lots: the backbone every other module refers to.</td></tr>
+<tr><td>Scheduling (SC)</td><td>Schedule packs and stage dates by lot, post pack tickets; schedule, overdue and backlog reports.</td></tr>
+<tr><td>Foreman Reports (FM)</td><td>Start packets, sequence sheets, work in progress, labor and material by lot, item research.</td></tr>
+<tr><td>Time and Material (TM)</td><td>Time-and-material orders and quotes: price, process into Plan Management, print, pay.</td></tr>
+<tr><td>Customer Service (CS)</td><td>Homeowners, properties, service tickets, calendar, quotes, call notes and technicians.</td></tr>
+<tr><td>Alarm Monitoring (AM)</td><td>Security accounts, call lists, zones, renewals, audit and printed account sheets.</td></tr>
+<tr><td rowspan="3"><b>Finance</b></td><td>Payroll (PR)</td><td>Piece and hourly timecards, posting labor to lots, employees, pay periods, labor-paid reports.</td></tr>
+<tr><td>Accounts Receivable (AR)</td><td>Bill builders by lot and stage, post invoices, manual invoices, credits, billing and WIP reports.</td></tr>
+<tr><td>Management (MG)</td><td>Job cost and profit by builder, job, phase and lot; lots to close; labor against budget.</td></tr>
+<tr><td rowspan="2"><b>Supply chain</b></td><td>Inventory Control (IC)</td><td>Items, vendors, stock by division, adjustments, counts, posting pack material to job cost.</td></tr>
+<tr><td>Purchasing (PO)</td><td>Purchase orders, receiving, billing, pack POs and purchasing reports.</td></tr>
+<tr><td rowspan="3"><b>Pre-construction</b></td><td>Estimating (ES)</td><td>Bids, plans, assemblies, option packs and material; transfer a bid to Plan Management; master assemblies.</td></tr>
+<tr><td>Plan Management (PM)</td><td>Customers, jobs, bids, plans, packs and pack material; copies, bulk edits and price updates.</td></tr>
+<tr><td>Contract Management (CM)</td><td>Contracts and addenda, diary, bid links, contract values, revised contract values, contract reports.</td></tr>
+<tr><td rowspan="4"><b>Other</b></td><td>Sales (SA)</td><td>Sales leads with homeowners and phones; sales and billing reports.</td></tr>
+<tr><td>Cox Cable (CX)</td><td>Cox jobs, assessors, plans and material; material requests, billing runs and Cox reports.</td></tr>
+<tr><td>Public (PU)</td><td>Lot finder, job lists, lot and plan data, start-pack labor: shared reports for everyone.</td></tr>
+<tr><td>Database Maintenance (DM)</td><td>Administrators only: logins and module permissions, lookup lists, data-fix screens, posting and price tools.</td></tr>
+</tbody></table>
+
+<div class="pb"></div>
+<h2>3. How the modules depend on each other</h2>
+<p>The modules share one database, so work done in one module appears in the next. The flow below follows a job from the first estimate to the invoice. Arrows show where one module's output becomes the next module's input.</p>
+
+<div class="lane"><div class="lab">1. Before the job</div><div class="row">
+  <div class="m v">Estimating (ES)<small>bids, plans, assemblies</small></div><span class="arrow">&rarr;</span>
+  <div class="m v">Plan Management (PM)<small>plans, packs, material, prices</small></div><span class="arrow">&rarr;</span>
+  <div class="m v">Contract Management (CM)<small>contracts, contract values</small></div></div></div>
+<div class="lane"><div class="lab">2. Set up and schedule</div><div class="row">
+  <div class="m">Job Setup (JS)<small>builders, jobs, phases, lots</small></div><span class="arrow">&rarr;</span>
+  <div class="m">Scheduling (SC)<small>packs and stage dates per lot</small></div></div></div>
+<div class="lane"><div class="lab">3. Doing the work</div><div class="row">
+  <div class="m g">Payroll (PR)<small>labor posted to the lot</small></div>
+  <div class="m o">Purchasing (PO)<small>orders, receiving</small></div><span class="arrow">&rarr;</span>
+  <div class="m o">Inventory (IC)<small>stock, material posted to the lot</small></div>
+  <div class="m">Time &amp; Material (TM)<small>extra work orders</small></div></div></div>
+<div class="lane"><div class="lab">4. Cost, control and billing</div><div class="row">
+  <div class="m s">Job cost on each lot<small>labor + material posted</small></div><span class="arrow">&rarr;</span>
+  <div class="m g">Management (MG)<small>job cost and profit reports</small></div>
+  <div class="m">Foreman Reports (FM)<small>WIP, labor, material</small></div>
+  <div class="m g">Accounts Receivable (AR)<small>bills the builder by lot and stage</small></div></div></div>
+<div class="lane"><div class="lab">Alongside</div><div class="row">
+  <div class="m">Customer Service (CS)<small>homeowners and tickets on lots</small></div>
+  <div class="m">Sales (SA)<small>leads, uses CS homeowner data</small></div>
+  <div class="m">Cox Cable (CX)<small>Cox jobs, material, billing</small></div>
+  <div class="m">Alarm Monitoring (AM)<small>stands alone</small></div></div></div>
+<div class="lane"><div class="lab">Underneath all</div><div class="row">
+  <div class="m s">Database Maintenance (DM)<small>logins, lookup lists, repair tools</small></div>
+  <div class="m s">Public (PU)<small>shared lookups for every user</small></div></div></div>
+<p class="cap">Colours: purple = pre-construction, blue = operations, green = finance, orange = supply chain, grey = shared.</p>
+
+<h3>Who gives data to whom (measured from how the screens read and save data)</h3>
+<table><thead><tr><th>Module</th><th>Uses data from</th><th>Gives data to</th></tr></thead><tbody>
+<tr><td><b>Estimating</b></td><td>Plan Management (existing plans), Inventory (items and prices), Contract Management</td><td>Plan Management: the "Transfer to Plan Management" action copies a bid, plan or pack across</td></tr>
+<tr><td><b>Plan Management</b></td><td>Job Setup (jobs), Inventory (items and prices)</td><td>Receives bids from Estimating and T&amp;M; its plans, packs and values are read by Contract Management, Scheduling, Payroll, Billing, Reports</td></tr>
+<tr><td><b>Contract Management</b></td><td>Plan Management (bids, plans, packs), Job Setup (lots)</td><td>Plan Management: contract values on plans and packs. Job Setup: "Update lot contract values" writes them onto open lots</td></tr>
+<tr><td><b>Job Setup</b></td><td>Plan Management (plans for lots)</td><td>Almost everyone: jobs, phases and lots are read by Scheduling, Payroll, Inventory, Billing, Management, Foreman, Customer Service, Sales</td></tr>
+<tr><td><b>Scheduling</b></td><td>Job Setup (lots), Plan Management (packs)</td><td>Job Setup: stage dates and posted stages on the lot. Billing relies on those stages</td></tr>
+<tr><td><b>Payroll</b></td><td>Job Setup (lots), Plan Management (packs), Inventory</td><td>Job cost: labor paid is posted to the lot. Read by Management, Foreman, Billing (what labor is paid)</td></tr>
+<tr><td><b>Purchasing</b></td><td>Inventory (items, vendors, stock), Job Setup, Plan Management</td><td>Inventory: receiving a purchase order adds the material to stock</td></tr>
+<tr><td><b>Inventory Control</b></td><td>Job Setup, Plan Management, Time &amp; Material</td><td>Job cost: pack material is posted to the lot. Receives stock from Purchasing</td></tr>
+<tr><td><b>Time &amp; Material</b></td><td>Job Setup, Inventory, Plan Management</td><td>Plan Management: processing a T&amp;M order creates the pack. Read by Billing</td></tr>
+<tr><td><b>Accounts Receivable</b></td><td>Job Setup (lots), Plan Management (contract values), Payroll (labor paid), Inventory and job cost, Time &amp; Material</td><td>Invoices: read by Management and the billing reports</td></tr>
+<tr><td><b>Management</b></td><td>Job Setup, Plan Management, Payroll, Inventory, Estimating, Billing, job cost</td><td>Reports only (nothing is changed)</td></tr>
+<tr><td><b>Foreman Reports</b></td><td>Job Setup, Plan Management, Inventory, Payroll, job cost</td><td>Reports only (nothing is changed)</td></tr>
+<tr><td><b>Customer Service</b></td><td>Job Setup (lots), Plan Management, Payroll, Inventory (material posted)</td><td>Sales reads the homeowner records it keeps</td></tr>
+<tr><td><b>Sales</b></td><td>Customer Service, Job Setup, Plan Management, Billing, Payroll</td><td>Customer Service: leads are stored with homeowners and phone numbers</td></tr>
+<tr><td><b>Cox Cable</b></td><td>Job Setup, Plan Management, Payroll</td><td>Job Setup: a material request stamps the Cox job type and the request date on the lots. Its own Cox jobs and billing runs are kept in Cox tables</td></tr>
+<tr><td><b>Alarm Monitoring</b></td><td>Lookup lists only</td><td>Stands alone: no other module reads or writes alarm accounts</td></tr>
+<tr><td><b>Public</b></td><td>Job Setup, Plan Management, Inventory</td><td>Reports and lookups only (nothing is changed)</td></tr>
+<tr><td><b>Database Maintenance</b></td><td>Everything (administrator tools)</td><td>Lookup lists used by all modules; repair and bulk tools for Job Setup, Inventory, Billing, Payroll, T&amp;M and Cox data</td></tr>
+</tbody></table>
+<p class="cap">Reading this table: "Reports only" modules never change data, so they are safe to open at any time. The modules that give data to others (Plan Management, Job Setup, Inventory, Payroll) are the ones to set up first.</p>
+
+<h2>4. What every module has in common</h2>
+<ul>
+<li><b>Same look and behaviour:</b> a menu on the left grouped by area, a search box that finds accounts, jobs, lots, employees and items (Ctrl+K), and tabs inside each module.</li>
+<li><b>Lists:</b> search, sort, page through, click a row to open it, export to CSV where it makes sense.</li>
+<li><b>Forms:</b> required fields are marked; pick-lists depend on each other (builder, then job, then phase, then lot); Save, Cancel and Delete work the same everywhere; delete and post actions ask for confirmation.</li>
+<li><b>Reports:</b> pick a report, choose the filters it needs, see the result on screen, then export or print.</li>
+<li><b>Division filter:</b> the top bar can limit the dashboard to one division (REI or REW).</li>
+<li><b>Dashboard:</b> the home page shows open lots, payroll pending, inventory value, items that need attention, billing by month and recent activity, with a link into each module.</li>
+</ul>
+
+<h2>5. Where the project stands and next steps</h2>
+<ul>
+<li>All 18 modules are built and work on the same database. They were built from the Access forms, macros and queries so the same business rules apply.</li>
+<li><b>Accounts Receivable</b> and <b>Contract Management</b> have been compared button by button with the Access switchboard, and each has a separate map showing every Access button and where it lives in the web app.</li>
+<li>For the other modules, a button-by-button comparison with Access is the next step. Where Access reports or exports are not yet built (for example some Inventory Control and Purchasing reports and exports), each module guide lists them under <b>Good to know</b>.</li>
+<li><b>Next:</b> acceptance testing with your team on real data, module by module; confirm the production database column types before any database scripts are run there; a final security hardening step before going live (for example, password storage and a company HTTPS address).</li>
+</ul>
+<p class="cap">Separate guides follow for each module: what it does, how its forms work, its reports and action buttons, and how it depends on other modules.</p>
+</body></html>

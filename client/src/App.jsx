@@ -49,6 +49,8 @@ import { ArBilling, ArBillLot } from './pages/ar/ArBilling'
 import ArPrebill from './pages/ar/ArPrebill'
 import { ArInvoice, ArInvoiceNew, ArInvoicePrint, ArInvoices } from './pages/ar/ArInvoices'
 import ArReports from './pages/ar/ArReports'
+import ArReportsPage from './pages/ar/ArReportsPage'
+import ArFixCode from './pages/ar/ArFixCode'
 import FmHome from './pages/fm/FmHome'
 import { jsRoutes } from './pages/js/routes'
 import MgHome from './pages/mg/MgHome'
@@ -161,7 +163,9 @@ export default function App() {
         <Route path="ar/invoices/new" element={ar(<ArInvoiceNew />)} />
         <Route path="ar/invoices/:id" element={ar(<ArInvoice />)} />
         <Route path="ar/invoices/:id/print" element={ar(<ArInvoicePrint />)} />
-        <Route path="ar/reports" element={ar(<ArReports />)} />
+        <Route path="ar/reports" element={ar(<ArReportsPage />)} />
+        <Route path="ar/reports/totals" element={ar(<ArReports />)} />
+        <Route path="ar/fix-billing-code" element={ar(<ArFixCode />)} />
         <Route path="fm" element={fm(<FmHome />)} />
         {jsRoutes.map((r) => <Route key={r.path} path={r.path} element={js(r.element)} />)}
         <Route path="mg" element={mg(<MgHome />)} />

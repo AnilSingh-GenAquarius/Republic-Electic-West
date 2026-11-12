@@ -5,7 +5,7 @@ import { CheckCircle2, Eraser, Send, Trash2 } from 'lucide-react'
 import { api } from '../../api'
 import { fmtDate } from '../../format'
 import { Badge, EmptyState, ErrorState, PageHeader, SkeletonRows } from '../../components/ui'
-import { ArTabs, money, pct, today, useArLookups } from './shared'
+import { ArTabs, ConfirmDialog, SnapshotsInUse, money, pct, today, useArLookups } from './shared'
 
 export default function ArPrebill() {
   const lk = useArLookups()
@@ -16,20 +16,24 @@ export default function ArPrebill() {
   const [error, setError] = useState('')
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [ask, setAsk] = useState(null)   // pending in-page confirmation: { title, text, label, danger, fn }
+  const [snapKey, setSnapKey] = useState(0)
   const set = (patch) => { const n = { ...p, ...patch }; Object.keys(n).forEach((x) => (n[x] === '' || n[x] == null) && delete n[x]); setSp(n) }
   const load = useCallback(() => api('/ar/prebill', { params: { customerId: p.customerId, division: p.division } }).then(setD).catch((e) => setError(e.message)), [p.customerId, p.division])
   useEffect(() => { setD(null); load() }, [load])
-  const run = async (fn) => { setError(''); setMsg(null); try { await fn(); await load() } catch (e) { setError(e.message) } }
+  const run = async (fn) => { setError(''); setMsg(null); try { await fn(); await load(); setSnapKey((k) => k + 1) } catch (e) { setError(e.message) } }
+  const confirmThen = (title, text, label, fn, danger = true) => setAsk({ title, text, label, fn, danger })
+  const doAsk = async () => { const a = ask; setAsk(null); await run(a.fn) }
   const ready = p.customerId && p.division
 
-  const post = () => run(async () => {
-    if (!confirm(`Post ${d.lots.length} lot(s) as invoices dated ${fmtDate(date)} for ${money(d.total)}?`)) return
+  const doPost = async () => {
     setBusy(true)
     try { const r = await api('/ar/post', { method: 'POST', body: { customerId: Number(p.customerId), division: p.division, invoiceDate: date } }); setMsg(r) } finally { setBusy(false) }
-  })
-  const clear = () => run(async () => { if (confirm('Clear everything submitted for this builder and division? Nothing is invoiced.')) { const r = await api('/ar/prebill/clear', { method: 'POST', body: { customerId: Number(p.customerId), division: p.division } }); setMsg({ cleared: r.cleared }) } })
-  const delLot = (id) => run(async () => { if (confirm('Remove this lot from the billing?')) await api(`/ar/prebill/lots/${id}`, { method: 'DELETE' }) })
-  const delLine = (id) => run(async () => { if (confirm('Remove this line?')) await api(`/ar/prebill/lines/${id}`, { method: 'DELETE' }) })
+  }
+  const post = () => confirmThen('Post billing', `Post ${d.lots.length} lot(s) as invoices dated ${fmtDate(date)} for ${money(d.total)}?`, 'Post billing', doPost, false)
+  const clear = () => confirmThen('Clear billing snapshot', 'Clear everything submitted for this builder and division? Nothing is invoiced.', 'Clear snapshot', async () => { const r = await api('/ar/prebill/clear', { method: 'POST', body: { customerId: Number(p.customerId), division: p.division } }); setMsg({ cleared: r.cleared }) })
+  const delLot = (id) => confirmThen('Remove lot', 'Remove this lot from the billing?', 'Remove lot', async () => { await api(`/ar/prebill/lots/${id}`, { method: 'DELETE' }) })
+  const delLine = (id) => confirmThen('Remove line', 'Remove this line?', 'Remove line', async () => { await api(`/ar/prebill/lines/${id}`, { method: 'DELETE' }) })
 
   return (
     <div className="page">
@@ -46,6 +50,7 @@ export default function ArPrebill() {
           {!ready && <span className="muted">Choose a builder and a division to post.</span>}
         </div>
       </div>
+      <SnapshotsInUse customerId={p.customerId} division={p.division} reloadKey={snapKey} />
       {error && <ErrorState message={error} />}
       {msg?.invoices && (
         <div className="success-state" style={{ marginBottom: 12 }}><CheckCircle2 size={16} />
@@ -92,6 +97,7 @@ export default function ArPrebill() {
           )}
         </>
       )}
+      {ask && <ConfirmDialog title={ask.title} confirmLabel={ask.label} danger={ask.danger} onCancel={() => setAsk(null)} onConfirm={doAsk}><p>{ask.text}</p></ConfirmDialog>}
     </div>
   )
 }

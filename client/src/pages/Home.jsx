@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   AlertCircle, ArrowRight, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, Clock, History, HardHat,
-  Home as HomeIcon, Table2, BarChart3, Wallet, Activity, Building2,
+  Home as HomeIcon, LayoutGrid, Table2, BarChart3, Wallet, Activity, Building2,
 } from 'lucide-react'
 import { api, session } from '../api'
-import { MODULES, moduleByCode } from '../modules'
+import { GROUPS, MODULES, moduleByCode } from '../modules'
 import { recentVisits, usePref } from '../prefs'
 import { useLookups } from '../components/Pickers'
 import { Badge, EmptyState, ErrorState, Skeleton, SkeletonRows, StatCard } from '../components/ui'
@@ -142,9 +142,9 @@ export default function Home() {
         </div>
       )}
 
-      <div className="dash-grid">
+      <div className="dash-top">
         {/* Needs attention */}
-        <Section title="Needs attention" icon={AlertCircle} className="span-2" action={att.length > 0 && <Badge tone="amber">{att.length} open</Badge>}>
+        <Section title="Needs attention" icon={AlertCircle} action={att.length > 0 && <Badge tone="amber">{att.length} open</Badge>}>
           <div id="attention" />
           {attention.loading && <SkeletonRows rows={3} cols={3} />}
           {attention.error && <ErrorState message={attention.error} onRetry={attention.reload} />}
@@ -191,6 +191,57 @@ export default function Home() {
           )}
         </Section>
 
+        {/* Modules */}
+        <section className="panel mod-panel" aria-labelledby="mod-h">
+          <div className="panel-head">
+            <h2 id="mod-h"><LayoutGrid size={16} />All modules</h2>
+            <span className="muted small">{MODULES.filter((m) => can(m.code) && m.ready).length} of {MODULES.filter((m) => can(m.code)).length} available on the web</span>
+          </div>
+          <div className="mod-groups">
+            {GROUPS.map((g) => {
+              const mods = MODULES.filter((m) => can(m.code) && m.group === g)
+              if (!mods.length) return null
+              return (
+                <div className="mod-group" key={g}>
+                  <h3 className="mod-group-title">{g}</h3>
+                  {mods.map((m) => {
+                    const Icon = m.icon
+                    const stats = m.screens ? `${m.screens.forms} forms · ${m.screens.reports} reports · ${m.screens.actions} actions` : 'In development'
+                    const body = (
+                      <>
+                        <span className={`mod-icon accent-${m.accent}`}><Icon size={15} /></span>
+                        <span className="mod-item-text">
+                          <span className="mod-item-name">{m.name}{!m.ready && <Badge>Coming soon</Badge>}</span>
+                          <span className="mod-item-desc">{m.description}</span>
+                          <span className="mod-item-stats">{stats}</span>
+                        </span>
+                      </>
+                    )
+                    return m.ready
+                      ? <Link key={m.code} to={m.path} className="mod-item" title={`${m.description} (${stats})`}>{body}</Link>
+                      : <div key={m.code} className="mod-item disabled" aria-disabled="true">{body}</div>
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      </div>
+
+      <div className="dash-grid">
+        {/* Charts */}
+        {can('AR') && (
+          <Section title="Billing by month" icon={BarChart3} className="span-2"
+            action={<div className="row">
+              <Link to="/insights/billing" className="panel-link">All invoices <ArrowRight size={13} /></Link>
+              <button className="btn small ghost" onClick={() => setBillTable((t) => !t)} aria-pressed={billTable}><Table2 size={13} /> {billTable ? 'Chart' : 'Table'}</button>
+            </div>}>
+            <p className="panel-sub">Total invoiced (A/R billing), last 12 months with billing activity</p>
+            {charts.loading ? <Skeleton h={180} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
+              billing.length ? <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} onBarClick={(d) => nav(`/insights/billing?month=${d.key}`)} /> : <EmptyState title="No billing history" />}
+          </Section>
+        )}
+
         {/* Jump back in */}
         <Section title="Jump back in" icon={History}>
           {!recent.length ? (
@@ -217,19 +268,17 @@ export default function Home() {
           )}
         </Section>
 
-        {/* Charts */}
-        {can('AR') && (
-          <Section title="Billing by month" icon={BarChart3} className="span-2"
+        {can('PR') && (
+          <Section title="Piece-rate payroll by pay date" icon={Wallet} className="span-2"
             action={<div className="row">
-              <Link to="/insights/billing" className="panel-link">All invoices <ArrowRight size={13} /></Link>
-              <button className="btn small ghost" onClick={() => setBillTable((t) => !t)} aria-pressed={billTable}><Table2 size={13} /> {billTable ? 'Chart' : 'Table'}</button>
+              <Link to="/insights/payroll-pending" className="panel-link">Pending payroll <ArrowRight size={13} /></Link>
+              <button className="btn small ghost" onClick={() => setPayTable((t) => !t)} aria-pressed={payTable}><Table2 size={13} /> {payTable ? 'Chart' : 'Table'}</button>
             </div>}>
-            <p className="panel-sub">Total invoiced (A/R billing), last 12 months with billing activity</p>
+            <p className="panel-sub">Piece-rate pay posted to labor paid (qty × price × pay %), last 12 payroll dates. Hourly hours shown in the tooltip.</p>
             {charts.loading ? <Skeleton h={180} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
-              billing.length ? <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} onBarClick={(d) => nav(`/insights/billing?month=${d.key}`)} /> : <EmptyState title="No billing history" />}
+              payroll.length ? <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} onBarClick={(d) => nav(`/insights/payroll-date?date=${String(d.key).slice(0, 10)}`)} /> : <EmptyState title="No payroll history" />}
           </Section>
         )}
-
         {/* Activity */}
         <Section title="Recent activity" icon={Activity}>
           {activity.loading && <SkeletonRows rows={5} cols={2} />}
@@ -252,51 +301,6 @@ export default function Home() {
             })}
           </ul>
         </Section>
-
-        {can('PR') && (
-          <Section title="Piece-rate payroll by pay date" icon={Wallet} className="span-2"
-            action={<div className="row">
-              <Link to="/insights/payroll-pending" className="panel-link">Pending payroll <ArrowRight size={13} /></Link>
-              <button className="btn small ghost" onClick={() => setPayTable((t) => !t)} aria-pressed={payTable}><Table2 size={13} /> {payTable ? 'Chart' : 'Table'}</button>
-            </div>}>
-            <p className="panel-sub">Piece-rate pay posted to labor paid (qty × price × pay %), last 12 payroll dates. Hourly hours shown in the tooltip.</p>
-            {charts.loading ? <Skeleton h={180} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
-              payroll.length ? <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} onBarClick={(d) => nav(`/insights/payroll-date?date=${String(d.key).slice(0, 10)}`)} /> : <EmptyState title="No payroll history" />}
-          </Section>
-        )}
-      </div>
-
-      {/* Modules */}
-      <div className="section-title">
-        <h2>Modules</h2>
-        <span className="muted small">{MODULES.filter((m) => can(m.code) && m.ready).length} of {MODULES.filter((m) => can(m.code)).length} available on the web</span>
-      </div>
-      <div className="mod-grid">
-        {MODULES.filter((m) => can(m.code)).map((m) => {
-          const Icon = m.icon
-          const body = (
-            <>
-              <div className="mod-card-top">
-                <span className={`mod-icon lg accent-${m.accent}`}><Icon size={18} /></span>
-                {m.ready ? <ArrowUpRight size={16} className="mod-arrow" /> : <Badge>Coming soon</Badge>}
-              </div>
-              <div className="mod-name">{m.name}</div>
-              <div className="mod-desc">{m.description}</div>
-              <div className="mod-stats">
-                {m.screens ? (
-                  <>
-                    <span><b>{m.screens.forms}</b> forms</span>
-                    <span><b>{m.screens.reports}</b> reports</span>
-                    <span><b>{m.screens.actions}</b> actions</span>
-                  </>
-                ) : <span className="muted">In development</span>}
-              </div>
-            </>
-          )
-          return m.ready
-            ? <Link key={m.code} to={m.path} className={`mod-card accent-line-${m.accent}`}>{body}</Link>
-            : <div key={m.code} className={`mod-card disabled accent-line-${m.accent}`} aria-disabled="true">{body}</div>
-        })}
       </div>
     </div>
   )

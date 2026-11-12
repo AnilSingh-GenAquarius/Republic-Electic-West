@@ -24,7 +24,7 @@ export default function CmJobs() {
   }, [sp.toString()])
   return (
     <div className="page">
-      <PageHeader title="Contracts" subtitle="Pick a job to see and enter its contracts, addenda, diary and links to estimating bids" />
+      <PageHeader title="Contract Management" subtitle="Pick a job to see and enter its contracts, addenda, diary and links to estimating bids" />
       <CmTabs />
       <div className="filters">
         <div className="search-wrap"><input type="search" aria-label="Search jobs" placeholder="Search job, customer or job number…" value={q} onChange={(e) => setQ(e.target.value)} /></div>

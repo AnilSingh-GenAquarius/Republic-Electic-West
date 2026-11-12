@@ -8,9 +8,9 @@ export function CmTabs() {
   return (
     <ModuleTabs tabs={[
       { to: '/cm', label: 'Overview', end: true },
-      { to: '/cm/jobs', label: 'Contracts' },
+      { to: '/cm/jobs', label: 'Contract Management' },
       { to: '/cm/values', label: 'Contract values' },
-      { to: '/cm/lots', label: 'Revised lot values' },
+      { to: '/cm/lots', label: 'Revised contract values' },
       { to: '/cm/reports', label: 'Reports' },
     ]} />
   )

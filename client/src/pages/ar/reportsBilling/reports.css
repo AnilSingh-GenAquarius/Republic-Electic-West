@@ -1,0 +1,9 @@
+.ar-rpt h2 { font-size: 18px; margin: 0 0 2px; }
+.ar-rpt .ar-sub { color: var(--text-2, #666); font-size: 13px; margin: 0 0 2px; }
+.ar-rpt .ar-grp td { font-weight: 600; background: var(--surface-2, rgba(128,128,128,.10)); }
+.ar-rpt .ar-sum td { font-weight: 600; border-top: 1px solid var(--border, #bbb); }
+.ar-rpt .ar-grand td { font-weight: 700; border-top: 2px solid var(--border, #888); }
+.ar-rpt .ar-block { margin: 14px 0 4px; font-weight: 700; }
+.ar-rpt .ar-pop { background: var(--surface-2, rgba(128,128,128,.08)); }
+.ar-rpt .ar-sign { margin-top: 26px; border-top: 1px solid currentColor; width: 320px; padding-top: 4px; font-size: 12px; }
+@media print { .ar-rpt .ar-pop { display: none; } .ar-rpt .ar-block { break-after: avoid; } .ar-rpt tr { break-inside: avoid; } }

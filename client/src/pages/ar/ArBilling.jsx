@@ -5,7 +5,7 @@ import { AlertTriangle, ArrowLeft, CheckCircle2, Send } from 'lucide-react'
 import { api } from '../../api'
 import { fmtDate } from '../../format'
 import { Badge, EmptyState, ErrorState, PageHeader, SkeletonRows } from '../../components/ui'
-import { ArTabs, LIENS, int, money, pct, today, useArLookups } from './shared'
+import { ArTabs, ConfirmDialog, LIENS, SnapshotsInUse, int, money, pct, today, useArLookups } from './shared'
 
 export function ArBilling() {
   const lk = useArLookups()
@@ -14,6 +14,8 @@ export function ArBilling() {
   const p = Object.fromEntries(sp.entries())
   const [d, setD] = useState(null)
   const [error, setError] = useState('')
+  const [snap, setSnap] = useState(null)
+  const [okKey, setOkKey] = useState('')   // builder|division the user chose to continue with although another user holds its snapshot
   const set = (patch) => { const n = { ...p, ...patch }; Object.keys(n).forEach((k) => (n[k] === '' || n[k] == null) && delete n[k]); setSp(n) }
   useEffect(() => {
     setD(null); setError('')
@@ -23,6 +25,9 @@ export function ArBilling() {
   }, [p.customerId, p.division, p.jobId])
   const totals = useMemo(() => (d?.lots || []).reduce((a, l) => ({ c: a.c + (l.Contract || 0), b: a.b + (l.Billed || 0), q: a.q + (l.Queued || 0) }), { c: 0, b: 0, q: 0 }), [d])
   const ready = p.customerId && p.division
+  // Access ArBillingWarning: somebody else already holds a snapshot of this builder + division
+  const holders = ready && snap ? [...new Set(snap.rows.filter((r) => String(r.CustId) === String(p.customerId) && r.DivisionId === p.division && r.UserSelect !== snap.me).map((r) => r.UserSelect))] : []
+  const blocked = holders.length > 0 && okKey !== `${p.customerId}|${p.division}`
   return (
     <div className="page">
       <PageHeader title="Process billing" subtitle="Choose a builder and division, then set what to bill on each lot"
@@ -33,25 +38,33 @@ export function ArBilling() {
         <label>Division *<select aria-label="Division" value={p.division || ''} onChange={(e) => set({ division: e.target.value, jobId: '' })}><option value="">Choose…</option>{lk.divisions.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
         <label>Job<select aria-label="Job" value={p.jobId || ''} onChange={(e) => set({ jobId: e.target.value })} disabled={!d}><option value="">All jobs</option>{(d?.jobs || []).map((j) => <option key={j.id} value={j.id}>{j.name}</option>)}</select></label>
       </fieldset></div>
+      <SnapshotsInUse customerId={p.customerId} division={p.division} onData={setSnap} />
       {error && <ErrorState message={error} />}
+      {holders.length > 0 && (
+        <div className="banner warn" role="alert"><AlertTriangle size={16} />
+          <span style={{ flex: 1 }}><b>Warning!</b> Somebody is already working on this customer for this division ({holders.join(', ')}). Are you sure you want to do billing for the same customer/division?</span>
+          {blocked && <button className="btn small" onClick={() => setOkKey(`${p.customerId}|${p.division}`)}>Yes, continue</button>}
+        </div>
+      )}
       {!ready ? <EmptyState title="Choose a builder and a division">Open lots (not finished, active) of that builder are listed with their contract value and what has been billed.</EmptyState>
+        : blocked ? <EmptyState title="Confirm to continue">Choose "Yes, continue" above to work on this builder and division while the other user holds its snapshot.</EmptyState>
         : !d ? <SkeletonRows rows={8} cols={5} /> : (
           <>
             {!d.billTo && <div className="banner"><AlertTriangle size={16} /> This builder has no bill-to address for division {p.division}. Invoices will be posted without an address.</div>}
             {d.billTo && <p className="muted" style={{ margin: '0 0 10px' }}>Bill to: {[d.billTo.CustContact, d.billTo.BillAddress, d.billTo.BillCity, d.billTo.BillState, d.billTo.BillZip].filter(Boolean).join(', ')}</p>}
             <div className="table-wrap"><table className="grid compact">
-              <thead><tr><th>Job</th><th>Lot / block</th><th>Plan</th><th>Phase</th><th>Address</th><th className="num">Contract</th><th className="num">Billed</th><th className="num">Left</th><th className="num">Invoices</th><th>Submitted</th></tr></thead>
+              <thead><tr><th>Job</th><th>Lot / block</th><th>Plan</th><th>Phase</th><th>Address</th><th className="num">Contract</th><th className="num">Billed</th><th className="num">Left</th><th className="num">Invoices</th><th className="num">Packs paid (payroll)</th><th>Submitted</th></tr></thead>
               <tbody>
                 {d.lots.map((l) => (
                   <tr key={l.LotID} className="link-row" onClick={() => nav(`/ar/billing/lots/${l.LotID}?${sp.toString()}`)}>
                     <td className="wrap">{l.JobName}</td><td><a><b>{l.Lot}/{l.Block}</b></a></td><td>{l.PlanNum}</td><td>{l.Phase}</td><td className="wrap">{l.Address}</td>
-                    <td className="num">{money(l.Contract || 0)}</td><td className="num">{money(l.Billed || 0)}</td><td className="num"><b>{money((l.Contract || 0) - (l.Billed || 0))}</b></td><td className="num">{int(l.Invoices)}</td>
+                    <td className="num">{money(l.Contract || 0)}</td><td className="num">{money(l.Billed || 0)}</td><td className="num"><b>{money((l.Contract || 0) - (l.Billed || 0))}</b></td><td className="num">{int(l.Invoices)}</td><td className="num">{l.PaidPacks ? int(l.PaidPacks) : ""}</td>
                     <td>{l.Queued ? <Badge tone="violet">{money(l.Queued)}</Badge> : ''}</td>
                   </tr>
                 ))}
-                {!d.lots.length && <tr><td colSpan={10}><EmptyState title="No open lots for this builder and division" /></td></tr>}
+                {!d.lots.length && <tr><td colSpan={11}><EmptyState title="No open lots for this builder and division" /></td></tr>}
               </tbody>
-              {d.lots.length > 0 && <tfoot><tr><td colSpan={5}><b>{d.lots.length} lot(s)</b></td><td className="num"><b>{money(totals.c)}</b></td><td className="num"><b>{money(totals.b)}</b></td><td className="num"><b>{money(totals.c - totals.b)}</b></td><td /><td><b>{totals.q ? money(totals.q) : ''}</b></td></tr></tfoot>}
+              {d.lots.length > 0 && <tfoot><tr><td colSpan={5}><b>{d.lots.length} lot(s)</b></td><td className="num"><b>{money(totals.c)}</b></td><td className="num"><b>{money(totals.b)}</b></td><td className="num"><b>{money(totals.c - totals.b)}</b></td><td /><td /><td><b>{totals.q ? money(totals.q) : ''}</b></td></tr></tfoot>}
             </table></div>
           </>
         )}
@@ -73,6 +86,7 @@ export function ArBillLot() {
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
   const [setX, setSetX] = useState('')
+  const [askRemove, setAskRemove] = useState(false)
 
   const load = useCallback(async () => {
     const r = await api(`/ar/lots/${lotId}/lines`)
@@ -102,7 +116,8 @@ export function ArBillLot() {
     } catch (e) { if (e.data?.needsConfirm) setConfirmMsg(e.message); else setError(e.message) } finally { setBusy(false) }
   }
   async function removeQueued() {
-    if (!d.queued[0] || !confirm('Remove this lot from the billing that is waiting to post?')) return
+    setAskRemove(false)
+    if (!d.queued[0]) return
     try { await api(`/ar/prebill/lots/${d.queued[0].PreBillLotID}`, { method: 'DELETE' }); setMsg('Removed from the pre-bill.'); await load() } catch (e) { setError(e.message) }
   }
 
@@ -125,7 +140,7 @@ export function ArBillLot() {
       {!d ? <SkeletonRows rows={8} cols={5} /> : (
         <>
           {lot.EndDate && <div className="banner"><AlertTriangle size={16} /> This lot was finished on {fmtDate(lot.EndDate)}.</div>}
-          {d.queued.length > 0 && <div className="banner"><Send size={16} /> This lot is already submitted ({d.queued.length} line(s)) and waiting to post. Submitting again replaces it. <button className="btn small" onClick={removeQueued}>Remove</button></div>}
+          {d.queued.length > 0 && <div className="banner"><Send size={16} /> This lot is already submitted ({d.queued.length} line(s)) and waiting to post. Submitting again replaces it. <button className="btn small" onClick={() => setAskRemove(true)}>Remove</button></div>}
           <div className="card form">
             <fieldset>
               <legend>Invoice</legend>
@@ -179,6 +194,7 @@ export function ArBillLot() {
           )}
         </>
       )}
+      {askRemove && <ConfirmDialog title="Remove lot" confirmLabel="Remove lot" danger onCancel={() => setAskRemove(false)} onConfirm={removeQueued}><p>Remove this lot from the billing that is waiting to post?</p></ConfirmDialog>}
     </div>
   )
 }

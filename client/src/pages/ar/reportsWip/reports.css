@@ -1,0 +1,12 @@
+.arw .ar-sub { margin: 0 0 2px; color: var(--text-2); font-size: 12.5px; }
+.arw .arw-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.arw .arw-wide .grid th, .arw .arw-wide .grid td { white-space: nowrap; }
+.arw .arw-sec { margin-top: 16px; }
+.arw .arw-sec h3 { font-size: 14px; margin: 0 0 6px; }
+.arw .arw-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.arw .grid tr.arw-grand td { border-top: 2px solid var(--border); }
+@media (max-width: 900px) { .arw .arw-two { grid-template-columns: 1fr; } }
+@media print {
+  .arw .arw-wide .grid th, .arw .arw-wide .grid td { padding: 3px 4px; font-size: 9.5px; }
+  .arw .no-print { display: none !important; }
+}

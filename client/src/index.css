@@ -781,3 +781,74 @@ tr.mg-budget td { background: var(--blue-soft, #eef4ff); font-weight: 600; }
   .am-report { box-shadow: none; border: 0; padding: 0; }
   .am-sec, .grid tr { break-inside: avoid; }
 }
+
+/* ==========================================================================
+   Dashboard v2 — compact welcome, accented KPIs, attention beside modules
+   ========================================================================== */
+.dashboard .welcome { padding: 14px 20px; margin-bottom: 14px; }
+.dashboard .welcome h1 { font-size: 22px; font-weight: 750; margin: 2px 0 0; }
+.dashboard .kpis { gap: 12px; margin-bottom: 16px; }
+.dashboard .stat-card { min-height: 0; padding: 12px 16px 12px 16px; gap: 4px; border-left-width: 4px; }
+.dashboard .stat-card.tone-blue { border-left-color: var(--blue); }
+.dashboard .stat-card.tone-green { border-left-color: var(--green); }
+.dashboard .stat-card.tone-amber { border-left-color: #f59e0b; background: #fffaf0; }
+.dashboard .stat-card.tone-red { border-left-color: var(--red); }
+.dashboard .stat-value { font-size: 28px; line-height: 1.15; }
+.dashboard .stat-icon { width: 28px; height: 28px; }
+
+.dash-top { display: grid; grid-template-columns: minmax(340px, 4fr) minmax(0, 7fr); gap: 16px; align-items: start; margin-bottom: 16px; }
+.dash-top > .panel, .dash-grid > .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px 16px; box-shadow: var(--shadow-xs); }
+.dash-grid { align-items: stretch; }
+.dashboard .panel-head h2 { font-size: 16px; font-weight: 700; }
+
+/* Attention items sit in a narrow column: stack the text above its buttons */
+.dash-top .task { flex-direction: column; align-items: stretch; gap: 8px; padding: 11px 12px 11px 16px; }
+.dash-top .task-actions { justify-content: flex-start; flex-wrap: wrap; }
+.dash-top .task-detail { margin-top: 2px; }
+.dash-top .task.prio-high { background: #fff8f4; }
+
+/* Modules: grouped, balanced columns */
+.mod-groups { column-count: 3; column-gap: 26px; }
+.mod-group { break-inside: avoid; margin-bottom: 14px; }
+.mod-group-title { margin: 0 0 4px; padding-bottom: 6px; border-bottom: 2px solid var(--border-strong); font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.mod-item { display: flex; align-items: center; gap: 10px; padding: 6px 6px; margin: 0 -6px; border-radius: 9px; color: var(--text); }
+a.mod-item:hover { background: var(--surface-3); text-decoration: none; }
+.mod-item.disabled { opacity: .6; cursor: not-allowed; }
+.mod-item .mod-icon { width: 30px; height: 30px; border-radius: 8px; }
+.mod-item-text { display: flex; flex-direction: column; min-width: 0; }
+.mod-item-name { display: flex; align-items: center; gap: 6px; font-weight: 650; font-size: 13.5px; line-height: 1.25; }
+.mod-item-desc { color: var(--muted); font-size: 12px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.mod-item-stats { color: var(--faint); font-size: 11.5px; line-height: 1.3; }
+.mod-panel .panel-head { margin-bottom: 8px; }
+
+@media (max-width: 1280px) { .mod-groups { column-count: 2; } }
+@media (max-width: 1000px) { .dash-top { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) { .mod-groups { column-count: 1; } }
+
+/* Dashboard v2 polish */
+.dash-top { grid-template-columns: minmax(340px, 3.6fr) minmax(0, 7.4fr); align-items: stretch; }
+.mod-groups { column-gap: 22px; }
+.mod-item-stats { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-top .task { gap: 6px; padding: 9px 12px 9px 16px; }
+.dash-top .task-top { gap: 6px; }
+.dash-top .task-meta { margin-top: 3px; gap: 10px; font-size: 11.5px; }
+.dash-top .task-actions .btn { height: 28px; }
+.dash-top .tasks { gap: 6px; }
+.feed { max-height: 380px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
+
+/* keep responsive rules last so they win over the polish above */
+@media (max-width: 1000px) { .dash-top { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1280px) { .mod-groups { column-count: 2; } }
+@media (max-width: 640px) { .mod-groups { column-count: 1; } }
+@media (max-width: 1200px) { .dash-grid { grid-template-columns: minmax(0, 1fr); } .dash-grid .span-2 { grid-column: auto; } }
+
+/* In-page confirmation dialog */
+.dialog-scrim { position: fixed; inset: 0; z-index: 60; background: rgba(15, 27, 45, .45); display: grid; place-items: center; padding: 16px; animation: pop .12s ease-out; }
+.dialog { width: 100%; max-width: 440px; background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 20px 22px 18px; }
+.dialog h2 { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--red); margin-bottom: 10px; }
+.dialog p { margin: 0 0 8px; }
+.dialog-actions { justify-content: flex-end; margin-top: 14px; }
+
+/* AR reports page: group headings above the report cards */
+.ar-group { margin: 14px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.fm-report b svg { margin-left: 2px; color: var(--muted); vertical-align: -1px; }

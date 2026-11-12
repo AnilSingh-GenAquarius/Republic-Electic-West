@@ -33,7 +33,7 @@ export default function ArHome() {
       </div>
       <div className="dash-grid">
         <section className="panel span-2">
-          <div className="panel-head"><h2>Billing by month</h2><Link className="panel-link" to="/ar/reports?kind=invoices&groupBy=month">Report <ArrowRight size={13} /></Link></div>
+          <div className="panel-head"><h2>Billing by month</h2><Link className="panel-link" to="/ar/reports/totals?kind=invoices&groupBy=month">Report <ArrowRight size={13} /></Link></div>
           {!d ? <SkeletonRows rows={4} cols={1} /> : months.length ? <BarChart data={months} format={money0} ariaLabel="Billing by month" onBarClick={(m) => nav(`/ar/invoices?from=${m.key}-01&to=${m.key}-31`)} /> : <EmptyState title="No invoices in the last six months" />}
         </section>
         <section className="panel span-2">

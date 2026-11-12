@@ -33,7 +33,7 @@ export const MODULES = [
     screens: { forms: 6, reports: 8, actions: 4 } },
   { code: 'AR', name: 'Accounts receivable', path: '/ar', icon: Receipt, group: 'Finance', accent: 'green', ready: true,
     description: 'Process billing by lot and stage, post invoices, manual invoices, credits and AR reports.',
-    screens: { forms: 6, reports: 3, actions: 7 } },
+    screens: { forms: 4, reports: 18, actions: 3 } },
   { code: 'MG', name: 'Management', path: '/mg', icon: BarChart3, group: 'Finance', accent: 'slate', ready: true,
     description: 'Job cost and profit by builder, job, phase, lot and super; lots to close; labor vs budget; lot details.',
     screens: { forms: 2, reports: 19, actions: 1 } },
@@ -54,7 +54,7 @@ export const MODULES = [
     description: 'Customers, jobs and bids; plans, packs and pack material; copies, bulk edits and price updates.',
     screens: { forms: 5, reports: 12, actions: 6 } },
   { code: 'CM', name: 'Contract management', path: '/cm', icon: FileSignature, group: 'Pre-construction', accent: 'slate', ready: true,
-    description: 'Contracts with addenda, diary and bid links; contract values by plan and pack; revised lot values; latest changes and 20 contract reports.',
+    description: 'Contracts with addenda, diary and bid links; contract values by plan and pack; revised contract values; latest changes and 20 contract reports.',
     screens: { forms: 17, reports: 22, actions: 6 } },
 
   // Other

@@ -47,7 +47,7 @@ export default function CmJob() {
 
   return (
     <div className="page">
-      <PageHeader crumb={<Link to="/cm/jobs">Contracts</Link>} title={j ? j.Job : 'Job'} track={!!j}
+      <PageHeader crumb={<Link to="/cm/jobs">Contract Management</Link>} title={j ? j.Job : 'Job'} track={!!j}
         subtitle={j ? `${j.Customer} · ${j.DivisionId || ''}${j.JobNumber ? ` · #${j.JobNumber}` : ''}` : null}
         actions={<Link className="btn" to="/cm/jobs"><ArrowLeft size={15} /> All jobs</Link>} />
       <CmTabs />
