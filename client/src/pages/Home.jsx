@@ -307,7 +307,7 @@ export default function Home() {
                     ['Best month', billBest ? `${monthShort(billBest)} · ${money0(billBest.value)}` : '—'],
                     ['Latest month', billLast ? `${monthShort(billLast)} · ${money0(billLast.value)}` : '—'],
                   ]} />
-                  <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} showValues average={billAvg}
+                  <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} showValues average={billAvg} fluid height={230}
                     onBarClick={(d) => nav(`/insights/billing?month=${d.key}`)} />
                 </>
               ) : <EmptyState title="No billing history" />}
@@ -378,7 +378,7 @@ export default function Home() {
                     ['Highest', payBest ? `${payBest.short} · ${money0(payBest.value)}` : '—'],
                     ['Latest', payLast ? `${payLast.short} · ${money0(payLast.value)}` : '—'],
                   ]} />
-                  <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} showValues
+                  <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} showValues fluid height={230}
                     onBarClick={(d) => nav(`/insights/payroll-date?date=${String(d.key).slice(0, 10)}`)} />
                 </>
               ) : <EmptyState title="No payroll history" />}

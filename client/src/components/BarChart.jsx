@@ -1,14 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * Single-series column chart (SVG). data = [{ key, label, value, tip: [ [k,v], ... ] }].
  * Spec: ≤24px columns, 4px rounded tops anchored to a single baseline, hairline grid,
  * per-column hover tooltip, value label on the last column only, and an optional table view.
- * Optional: showValues puts a value label on every column; average draws a dashed reference line.
+ * Optional: showValues puts a value label on every column; average draws a dashed reference line;
+ * fluid draws at the container's real pixel width with a fixed height, so text and bars keep
+ * their normal size on wide screens instead of the whole chart being scaled up.
  */
-export default function BarChart({ data, format = (v) => v, height = 200, ariaLabel, showTable, onBarClick, showValues = false, average }) {
+export default function BarChart({ data, format = (v) => v, height = 200, ariaLabel, showTable, onBarClick, showValues = false, average, fluid = false }) {
   const [hover, setHover] = useState(null)
-  const W = 640, H = height, padL = 48, padR = average > 0 ? 52 : 12, padT = 18, padB = 26
+  const wrapRef = useRef(null)
+  const [boxW, setBoxW] = useState(0)
+  useEffect(() => {
+    if (!fluid || !wrapRef.current || typeof ResizeObserver === 'undefined') return undefined
+    const ro = new ResizeObserver(([e]) => setBoxW(Math.round(e.contentRect.width)))
+    ro.observe(wrapRef.current)
+    return () => ro.disconnect()
+  }, [fluid, showTable])
+  const W = fluid && boxW ? boxW : 640, H = height, padL = 48, padR = average > 0 ? 64 : 12, padT = 18, padB = 26
   const innerW = W - padL - padR, innerH = H - padT - padB
 
   const { ticks, max } = useMemo(() => {
@@ -22,7 +32,7 @@ export default function BarChart({ data, format = (v) => v, height = 200, ariaLa
 
   const compact = (v) => (v >= 1e6 ? `${+(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${+(v / 1e3).toFixed(1)}K` : `${v}`)
   const slot = innerW / Math.max(1, data.length)
-  const bw = Math.min(24, slot * 0.6)
+  const bw = Math.min(fluid ? 44 : 24, slot * 0.6)
   const y = (v) => padT + innerH - (v / max) * innerH
 
   if (showTable) {
@@ -37,7 +47,7 @@ export default function BarChart({ data, format = (v) => v, height = 200, ariaLa
   }
 
   return (
-    <div className="chart-wrap">
+    <div className="chart-wrap" ref={wrapRef}>
       <svg viewBox={`0 0 ${W} ${H}`} className="chart" role="img" aria-label={ariaLabel} onMouseLeave={() => setHover(null)}>
         {ticks.map((t) => (
           <g key={t}>
