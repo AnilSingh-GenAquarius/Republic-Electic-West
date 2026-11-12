@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Secrets / environment (DB password, session secret)
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Database files / backups
+*.accdb
+*.laccdb
+*.mdf
+*.ldf
+*.bak
+*.mdb
+
+# Reference screenshots of the old Access screens (large, not needed in repo)
+Old Screen/
+
+# Temporary / generated files
+_*.html
+*.tmp
+*.swp
+.cache/
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
