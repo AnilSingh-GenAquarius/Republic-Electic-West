@@ -60,10 +60,8 @@ import { csRoutes } from './pages/cs/routes'
 import { pmRoutes } from './pages/pm/routes'
 import { dmRoutes } from './pages/dm/routes'
 import { puRoutes } from './pages/pu/routes'
-import { cxRoutes } from './pages/cx/routes'
 import { cmRoutes } from './pages/cm/routes'
 import { esRoutes } from './pages/es/routes'
-import { saRoutes } from './pages/sa/routes'
 
 function RequireAuth({ children }) {
   return session.loggedIn ? children : <Navigate to="/login" replace />
@@ -89,10 +87,8 @@ const cs = (el) => <RequireModule code="CS">{el}</RequireModule>
 const pm = (el) => <RequireModule code="PM">{el}</RequireModule>
 const dm = (el) => <RequireModule code="DM">{el}</RequireModule>
 const pu = (el) => <RequireModule code="PU">{el}</RequireModule>
-const cx = (el) => <RequireModule code="CX">{el}</RequireModule>
 const cm = (el) => <RequireModule code="CM">{el}</RequireModule>
 const es = (el) => <RequireModule code="ES">{el}</RequireModule>
-const sa = (el) => <RequireModule code="SA">{el}</RequireModule>
 
 export default function App() {
   return (
@@ -175,10 +171,8 @@ export default function App() {
         {pmRoutes.map((r) => <Route key={r.path} path={r.path} element={pm(r.element)} />)}
         {dmRoutes.map((r) => <Route key={r.path} path={r.path} element={dm(r.element)} />)}
         {puRoutes.map((r) => <Route key={r.path} path={r.path} element={pu(r.element)} />)}
-        {cxRoutes.map((r) => <Route key={r.path} path={r.path} element={cx(r.element)} />)}
         {cmRoutes.map((r) => <Route key={r.path} path={r.path} element={cm(r.element)} />)}
         {esRoutes.map((r) => <Route key={r.path} path={r.path} element={es(r.element)} />)}
-        {saRoutes.map((r) => <Route key={r.path} path={r.path} element={sa(r.element)} />)}
 
         {/* Dashboard drill-downs */}
         <Route path="insights/open-lots" element={<OpenLots />} />

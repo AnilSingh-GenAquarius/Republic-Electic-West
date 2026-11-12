@@ -12,7 +12,6 @@ export const csTabs = [
   { to: '/cs/customers', label: 'Homeowners' },
   { to: '/cs/properties', label: 'Properties' },
   { to: '/cs/call-notes', label: 'Call notes' },
-  { to: '/cs/quotes', label: 'Quotes' },
   { to: '/cs/reports', label: 'Reports' },
   { to: '/cs/setup', label: 'Setup' },
 ]

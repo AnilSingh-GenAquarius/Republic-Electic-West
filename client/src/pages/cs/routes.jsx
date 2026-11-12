@@ -10,7 +10,6 @@ import { CsTicket, CsTickets } from './CsTickets'
 import { CsCustomerDetail, CsCustomers } from './CsCustomers'
 import { CsProperties, CsPropertyDetail } from './CsProperties'
 import CsCallNotes from './CsCallNotes'
-import { CsQuote, CsQuotes } from './CsQuotes'
 import CsReports from './CsReports'
 import CsSetup, { CsAssembly, CsItem } from './CsSetup'
 
@@ -27,8 +26,6 @@ export const csRoutes = [
   { path: 'cs/properties', element: <CsProperties /> }, // ?tab=production = add production jobs/lots
   { path: 'cs/properties/:id', element: <CsPropertyDetail /> },
   { path: 'cs/call-notes', element: <CsCallNotes /> },
-  { path: 'cs/quotes', element: <CsQuotes /> },
-  { path: 'cs/quotes/:id', element: <CsQuote /> },
   { path: 'cs/reports', element: <CsReports /> },
   { path: 'cs/setup', element: <CsSetup /> }, // ?tab=technicians|assemblies|lists|items
   { path: 'cs/assemblies/:id', element: <CsAssembly /> },

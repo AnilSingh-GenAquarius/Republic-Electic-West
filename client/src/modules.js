@@ -1,13 +1,13 @@
 import {
   LayoutDashboard, ShieldCheck, Receipt, FileSignature, Headset, Calculator, Boxes, ShoppingCart,
-  HardHat, CalendarClock, ClipboardList, Wallet, Clock3, BarChart3, Cable, Database, ClipboardCheck,
-  Globe, TrendingUp,
+  HardHat, CalendarClock, ClipboardList, Wallet, Clock3, BarChart3, Database, ClipboardCheck,
+  Globe,
 } from 'lucide-react'
 
 // The 18 modules on the Staffware v5.27 switchboard — same codes and names as Access.
 // `code` matches the LoginUsers permission flag (PU "Public" is open to every user).
 // `ready` = built in the web app. `screens` = what exists (shown on module cards).
-export const MODULES = [
+const MODULE_LIST = [
   // Operations
   { code: 'JS', name: 'Job setup', path: '/js', icon: HardHat, group: 'Operations', accent: 'blue', ready: true,
     description: 'Builders and bill-to addresses, jobs, phases, lots, job setup reports and lists.',
@@ -58,12 +58,6 @@ export const MODULES = [
     screens: { forms: 17, reports: 22, actions: 6 } },
 
   // Other
-  { code: 'SA', name: 'Sales', path: '/sa', icon: TrendingUp, group: 'Other', accent: 'slate', ready: true,
-    description: 'Sales leads with homeowners and phones; sales by plan, billing by lot, option and labor-paid reports, lots closed / by stage.',
-    screens: { forms: 1, reports: 8, actions: 3 } },
-  { code: 'CX', name: 'Cox cable', path: '/cx', icon: Cable, group: 'Other', accent: 'slate', ready: true,
-    description: 'Cox jobs, assessors, plans and plan material; Cox items; billing info; material requests, billing runs and Cox reports.',
-    screens: { forms: 4, reports: 12, actions: 3 } },
   { code: 'PU', name: 'Public', path: '/pu', icon: Globe, group: 'Other', accent: 'slate', ready: true, public: true,
     description: 'Lot finder, job lists, lot and plan data, start-pack labor — 11 shared reports for every user.',
     screens: { forms: 5, reports: 11, actions: 0 } },
@@ -71,6 +65,9 @@ export const MODULES = [
     description: 'Logins and module permissions, 42 lookup lists, data fix screens, posting and price-update tools, lot close history.',
     screens: { forms: 4, reports: 2, actions: 9 } },
 ]
+
+// Menu and dashboard list the modules A to Z inside each group.
+export const MODULES = [...MODULE_LIST].sort((a, b) => a.name.localeCompare(b.name))
 
 export const DASHBOARD = { name: 'Dashboard', path: '/', icon: LayoutDashboard }
 export const GROUPS = ['Operations', 'Finance', 'Supply chain', 'Pre-construction', 'Other']
