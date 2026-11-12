@@ -44,6 +44,7 @@ function obfuscateAppCode() {
 }
 
 export default defineConfig(({ command }) => ({
+  base: process.env.VITE_BASE || '/', // GitHub Pages build sets VITE_BASE=/<repo>/
   plugins: [react(), obfuscateAppCode()],
   esbuild: command === 'build' ? { drop: ['console', 'debugger'], legalComments: 'none' } : {},
   build: {
