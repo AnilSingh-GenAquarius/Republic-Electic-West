@@ -104,7 +104,17 @@ export const CLIENT_HEADERS = { 'X-Staffware-Client': '1' };
 
 // Raw fetch for file downloads — same session cookie and header as api().
 export async function apiBlob(path) {
-  if (DEMO) throw new Error('Exports are not available in the online demo.');
+  if (DEMO) {
+    // Demo export: build the file in the browser from the recorded report data (CSV opens in Excel).
+    const [p, q] = path.split('?');
+    const data = await demoGet(p.replace(/\.(csv|json)$/, ''), Object.fromEntries(new URLSearchParams(q || '')));
+    if (/\.json$/.test(p)) return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const rows = Array.isArray(data) ? data : data.rows || Object.values(data).find(Array.isArray) || [];
+    const cols = rows.length ? Object.keys(rows[0]) : [];
+    const cell = (v) => { const t = v == null ? '' : String(v); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const csv = [cols.join(','), ...rows.map((r) => cols.map((c) => cell(r[c])).join(','))].join('\r\n');
+    return new Blob([csv], { type: 'text/csv' });
+  }
   const res = await fetch(`/api${path}`, { headers: CLIENT_HEADERS, credentials: 'same-origin' });
   if (res.status === 401) { session.clear(); window.location.href = `${BASE}login`; }
   if (!res.ok) throw new Error('Export failed');
