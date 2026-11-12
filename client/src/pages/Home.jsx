@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  AlertCircle, ArrowRight, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, Clock, History, HardHat,
-  Home as HomeIcon, LayoutGrid, Table2, BarChart3, Wallet, Activity, Building2,
+  AlertCircle, ArrowRight, ArrowUpRight, Boxes, CalendarDays, CheckCircle2, ChevronDown, ChevronUp, History, HardHat,
+  Home as HomeIcon, LayoutGrid, BarChart3, Wallet, Activity, Building2, RefreshCw,
 } from 'lucide-react'
 import { api, session } from '../api'
 import { GROUPS, MODULES, moduleByCode } from '../modules'
@@ -24,15 +24,30 @@ function timeAgo(ts) {
   const d = Math.floor(s / 86400)
   return d < 30 ? `${d} day${d > 1 ? 's' : ''} ago` : fmtDate(ts)
 }
+function dayLabel(ts) {
+  const days = Math.floor((Date.now() - new Date(ts).getTime()) / 86400000)
+  if (days <= 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  return days < 30 ? `${days} days ago` : fmtDate(ts)
+}
 function ageLabel(since) {
   if (!since) return null
   const days = Math.floor((Date.now() - new Date(since).getTime()) / 86400000)
   if (days <= 0) return 'Due today'
-  if (days < 60) return `Oldest ${days} day${days > 1 ? 's' : ''} ago`
+  if (days < 60) return `${days} day${days > 1 ? 's' : ''} ago`
   const months = Math.floor(days / 30)
-  return months < 24 ? `Oldest ${months} months ago` : `Oldest since ${new Date(since).getUTCFullYear()}`
+  return months < 24 ? `${months} months ago` : `Since ${new Date(since).getUTCFullYear()}`
 }
 const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening' }
+const PRIO_TONE = { high: 'red', medium: 'amber', low: 'neutral' }
+
+// Shown in "Jump back in" until the user has opened some screens.
+const SUGGESTED = [
+  { path: '/ar/billing', title: 'Process billing', module: 'AR' },
+  { path: '/pr/piece', title: 'Piece timecard', module: 'PR' },
+  { path: '/sc', title: 'Schedule packs', module: 'SC' },
+  { path: '/pu', title: 'Lot finder', module: 'PU' },
+]
 
 function useLoad(fn, deps) {
   const [state, setState] = useState({ data: null, error: '', loading: true })
@@ -57,6 +72,23 @@ function Section({ title, icon: Icon, action, children, className = '' }) {
   )
 }
 
+function ChartToggle({ table, onChange }) {
+  return (
+    <span className="seg dash-seg" role="group" aria-label="Chart or table">
+      <button type="button" className={`seg-btn${!table ? ' active' : ''}`} aria-pressed={!table} onClick={() => onChange(false)}>Chart</button>
+      <button type="button" className={`seg-btn${table ? ' active' : ''}`} aria-pressed={table} onClick={() => onChange(true)}>Table</button>
+    </span>
+  )
+}
+
+function SummaryStrip({ items }) {
+  return (
+    <div className="dash-sum">
+      {items.map(([label, value]) => <div key={label}><span>{label}</span><b>{value}</b></div>)}
+    </div>
+  )
+}
+
 export default function Home() {
   const nav = useNavigate()
   const user = session.user
@@ -72,11 +104,23 @@ export default function Home() {
   const [recent] = useState(() => recentVisits().slice(0, 6))
   const [billTable, setBillTable] = useState(false)
   const [payTable, setPayTable] = useState(false)
+  const [showAllTasks, setShowAllTasks] = useState(false)
+  const [prio, setPrio] = useState('all')
+  const [showModDesc, setShowModDesc] = useState(false)
+  const [updatedAt, setUpdatedAt] = useState(() => Date.now())
+  const [, tick] = useState(0)
+  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 60000); return () => clearInterval(t) }, [])
+
+  const refresh = () => {
+    summary.reload(); attention.reload(); charts.reload(); activity.reload()
+    setUpdatedAt(Date.now())
+  }
+  const refreshing = summary.loading || attention.loading || charts.loading || activity.loading
 
   const s = summary.data
   const att = attention.data?.items || []
-  const [showAllTasks, setShowAllTasks] = useState(false)
-  const highCount = att.filter((a) => a.priority === 'high').length
+  const prioCount = (p) => att.filter((a) => a.priority === p).length
+  const shownAtt = prio === 'all' ? att : att.filter((a) => a.priority === prio)
 
   const billing = (charts.data?.billing || []).map((r) => {
     const d = new Date(r.month + '-01T00:00:00Z')
@@ -93,8 +137,30 @@ export default function Home() {
     tip: [['Hourly hours', num(r.hours)], ['Employees', num(r.employees)], ['Labor lines', num(r.lines)]],
   }))
 
+  const sumOf = (rows) => rows.reduce((t, r) => t + r.value, 0)
+  const maxOf = (rows) => rows.reduce((m, r) => (r.value > (m?.value ?? -1) ? r : m), null)
+  const billTotal = sumOf(billing)
+  const billAvg = billing.length ? billTotal / billing.length : 0
+  const billBest = maxOf(billing)
+  const billLast = billing[billing.length - 1]
+  const payTotal = sumOf(payroll)
+  const payBest = maxOf(payroll)
+  const payLast = payroll[payroll.length - 1]
+  const monthShort = (d) => (d ? d.label.replace(/ \d{4}$/, '').slice(0, 3) : '')
+
   const ph = s?.payrollPending
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+  const myModules = GROUPS.flatMap((g) => MODULES.filter((m) => can(m.code) && m.group === g))
+  const suggested = SUGGESTED.filter((x) => moduleByCode[x.module]?.ready && (moduleByCode[x.module]?.public || can(x.module)))
+
+  // Group the activity feed under day headings ("Today", "3 days ago", ...)
+  const activityGroups = []
+  for (const r of activity.data?.rows || []) {
+    const label = dayLabel(r.DateEntered)
+    const last = activityGroups[activityGroups.length - 1]
+    if (last && last.label === label) last.rows.push(r)
+    else activityGroups.push({ label, rows: [r] })
+  }
 
   return (
     <div className="page dashboard">
@@ -108,13 +174,10 @@ export default function Home() {
           </p>
         </div>
         <div className="welcome-overview">
-          {attention.loading ? <Skeleton w={220} h={16} /> : att.length ? (
-            <Link to="#attention" onClick={(e) => { e.preventDefault(); document.getElementById('attention')?.scrollIntoView({ behavior: 'smooth' }) }} className="overview-chip warn">
-              <AlertCircle size={15} /> {att.length} item{att.length > 1 ? 's' : ''} need attention{highCount ? ` · ${highCount} high priority` : ''}
-            </Link>
-          ) : (
-            <span className="overview-chip ok"><CheckCircle2 size={15} /> Everything is up to date</span>
-          )}
+          <span className="muted small">{refreshing ? 'Updating…' : `Updated ${timeAgo(updatedAt)}`}</span>
+          <button className="btn small ghost dash-refresh" onClick={refresh} disabled={refreshing} aria-label="Refresh dashboard" title="Refresh dashboard">
+            <RefreshCw size={14} className={refreshing ? 'spin' : ''} />
+          </button>
         </div>
       </section>
 
@@ -142,111 +205,118 @@ export default function Home() {
         </div>
       )}
 
-      <div className="dash-top">
-        {/* Needs attention */}
-        <Section title="Needs attention" icon={AlertCircle} action={att.length > 0 && <Badge tone="amber">{att.length} open</Badge>}>
-          <div id="attention" />
-          {attention.loading && <SkeletonRows rows={3} cols={3} />}
-          {attention.error && <ErrorState message={attention.error} onRetry={attention.reload} />}
-          {!attention.loading && !attention.error && !att.length && (
-            <EmptyState icon={CheckCircle2} title="All caught up">No pending payroll, overdue stages or unposted counts.</EmptyState>
-          )}
-          <ul className="tasks">
-            {(showAllTasks ? att : att.slice(0, 5)).map((a) => {
+      {/* Needs attention: full-width table */}
+      <Section title={<>Needs attention{att.length > 0 && <Badge tone="amber">{att.length} open</Badge>}</>} icon={AlertCircle} className="dash-block"
+        action={att.length > 0 && (
+          <span className="seg dash-seg" role="group" aria-label="Filter by priority">
+            {[['all', `All ${att.length}`], ['high', `High ${prioCount('high')}`], ['medium', `Medium ${prioCount('medium')}`], ['low', `Low ${prioCount('low')}`]].map(([k, l]) => (
+              <button key={k} type="button" className={`seg-btn${prio === k ? ' active' : ''}`} aria-pressed={prio === k} onClick={() => { setPrio(k); setShowAllTasks(false) }}>{l}</button>
+            ))}
+          </span>
+        )}>
+        <div id="attention" />
+        {attention.loading && <SkeletonRows rows={3} cols={4} />}
+        {attention.error && <ErrorState message={attention.error} onRetry={attention.reload} />}
+        {!attention.loading && !attention.error && !att.length && (
+          <EmptyState icon={CheckCircle2} title="All caught up">No pending payroll, overdue stages or unposted counts.</EmptyState>
+        )}
+        {!attention.loading && !attention.error && att.length > 0 && (
+          <div className="att-table" role="table" aria-label="Items that need attention">
+            <div className="att-row att-head" role="row">
+              <span aria-hidden="true" /><span role="columnheader">Item</span><span role="columnheader">Module</span>
+              <span role="columnheader">Oldest</span><span role="columnheader">Priority</span><span />
+            </div>
+            {(showAllTasks ? shownAtt : shownAtt.slice(0, 5)).map((a) => {
               const m = moduleByCode[a.module]
               const Icon = m?.icon
               const ready = m?.ready
               const records = `/insights/attention/${a.id}`
               const primary = ready ? a.action.to : records
               return (
-                <li key={a.id} className={`task prio-${a.priority} clickable`} onClick={(e) => !e.target.closest('button') && nav(primary)}>
-                  <span className={`prio-bar ${a.priority}`} aria-hidden="true" />
-                  <div className="task-main">
-                    <div className="task-top">
-                      <Badge tone={a.priority === 'high' ? 'red' : a.priority === 'medium' ? 'amber' : 'neutral'}>{a.priority}</Badge>
-                      <span className="task-title">{a.title}</span>
-                    </div>
-                    <div className="task-detail">{a.detail}</div>
-                    <div className="task-meta">
-                      {Icon && <span><Icon size={12} /> {m.name}</span>}
-                      {a.since && <span><Clock size={12} /> {ageLabel(a.since)}</span>}
-                    </div>
-                  </div>
-                  <div className="task-actions">
+                <div key={a.id} role="row" className="att-row clickable" onClick={(e) => !e.target.closest('button') && nav(primary)}>
+                  <span className={`att-dot ${a.priority}`} aria-hidden="true" />
+                  <span className="att-item" role="cell">
+                    <span className="att-title">{a.title}</span>
+                    <span className="att-detail">{a.detail}</span>
+                  </span>
+                  <span role="cell">{m && <span className={`att-mod accent-${m.accent}`}>{Icon && <Icon size={12} />}{m.name}</span>}</span>
+                  <span role="cell" className="muted small">{ageLabel(a.since) || '—'}</span>
+                  <span role="cell"><Badge tone={PRIO_TONE[a.priority] || 'neutral'}>{a.priority}</Badge></span>
+                  <span role="cell" className="att-actions">
                     {ready
                       ? <button className="btn small ghost" onClick={() => nav(records)}>View records</button>
-                      : a.review && <span className="muted small" title={`${m?.name} screens are being built`}>{m?.name} module coming soon</span>}
-                    <button className="btn small primary" onClick={() => nav(primary)}>
+                      : a.review && <span className="muted small" title={`${m?.name} screens are being built`}>Coming soon</span>}
+                    <button className={`btn small ${a.priority === 'high' ? 'primary' : ''}`} onClick={() => nav(primary)}>
                       {ready ? a.action.label : 'View records'} <ArrowRight size={13} />
                     </button>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-          {att.length > 5 && (
-            <button className="btn small ghost show-more" onClick={() => setShowAllTasks((s) => !s)}>
-              {showAllTasks ? 'Show fewer' : `Show all ${att.length} items`}
-            </button>
-          )}
-        </Section>
-
-        {/* Modules */}
-        <section className="panel mod-panel" aria-labelledby="mod-h">
-          <div className="panel-head">
-            <h2 id="mod-h"><LayoutGrid size={16} />All modules</h2>
-            <span className="muted small">{MODULES.filter((m) => can(m.code) && m.ready).length} of {MODULES.filter((m) => can(m.code)).length} available on the web</span>
-          </div>
-          <div className="mod-groups">
-            {GROUPS.map((g) => {
-              const mods = MODULES.filter((m) => can(m.code) && m.group === g)
-              if (!mods.length) return null
-              return (
-                <div className="mod-group" key={g}>
-                  <h3 className="mod-group-title">{g}</h3>
-                  {mods.map((m) => {
-                    const Icon = m.icon
-                    const stats = m.screens ? `${m.screens.forms} forms · ${m.screens.reports} reports · ${m.screens.actions} actions` : 'In development'
-                    const body = (
-                      <>
-                        <span className={`mod-icon accent-${m.accent}`}><Icon size={15} /></span>
-                        <span className="mod-item-text">
-                          <span className="mod-item-name">{m.name}{!m.ready && <Badge>Coming soon</Badge>}</span>
-                          <span className="mod-item-desc">{m.description}</span>
-                          <span className="mod-item-stats">{stats}</span>
-                        </span>
-                      </>
-                    )
-                    return m.ready
-                      ? <Link key={m.code} to={m.path} className="mod-item" title={`${m.description} (${stats})`}>{body}</Link>
-                      : <div key={m.code} className="mod-item disabled" aria-disabled="true">{body}</div>
-                  })}
+                  </span>
                 </div>
               )
             })}
           </div>
-        </section>
-      </div>
+        )}
+        {shownAtt.length > 5 && (
+          <button className="btn small ghost show-more" onClick={() => setShowAllTasks((v) => !v)}>
+            {showAllTasks ? <>Show fewer <ChevronUp size={13} /></> : <>Show all {shownAtt.length} items <ChevronDown size={13} /></>}
+          </button>
+        )}
+      </Section>
+
+      {/* Modules: compact tiles */}
+      <Section title="Modules" icon={LayoutGrid} className="dash-block"
+        action={<div className="row">
+          <span className="muted small">{myModules.filter((m) => m.ready).length} of {myModules.length} available on the web</span>
+          <button className="btn small ghost" onClick={() => setShowModDesc((v) => !v)} aria-pressed={showModDesc}>
+            {showModDesc ? <>Hide descriptions <ChevronUp size={13} /></> : <>Show descriptions <ChevronDown size={13} /></>}
+          </button>
+        </div>}>
+        <div className={`mod-tiles${showModDesc ? ' with-desc' : ''}`}>
+          {myModules.map((m) => {
+            const Icon = m.icon
+            const stats = m.screens ? `${m.screens.forms} forms · ${m.screens.reports} reports · ${m.screens.actions} actions` : 'In development'
+            const body = (
+              <>
+                <span className={`mod-icon accent-${m.accent}`}><Icon size={16} /></span>
+                <span className="mod-tile-name">{m.name}</span>
+                {!m.ready && <Badge>Coming soon</Badge>}
+                {showModDesc && <span className="mod-tile-desc">{m.description}</span>}
+                {showModDesc && <span className="mod-tile-stats">{stats}</span>}
+              </>
+            )
+            return m.ready
+              ? <Link key={m.code} to={m.path} className="mod-tile" title={`${m.description} (${stats})`}>{body}</Link>
+              : <div key={m.code} className="mod-tile disabled" aria-disabled="true">{body}</div>
+          })}
+        </div>
+      </Section>
 
       <div className="dash-grid">
-        {/* Charts */}
+        {/* Billing */}
         {can('AR') && (
           <Section title="Billing by month" icon={BarChart3} className="span-2"
             action={<div className="row">
               <Link to="/insights/billing" className="panel-link">All invoices <ArrowRight size={13} /></Link>
-              <button className="btn small ghost" onClick={() => setBillTable((t) => !t)} aria-pressed={billTable}><Table2 size={13} /> {billTable ? 'Chart' : 'Table'}</button>
+              <ChartToggle table={billTable} onChange={setBillTable} />
             </div>}>
-            <p className="panel-sub">Total invoiced (A/R billing), last 12 months with billing activity</p>
-            {charts.loading ? <Skeleton h={180} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
-              billing.length ? <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} onBarClick={(d) => nav(`/insights/billing?month=${d.key}`)} /> : <EmptyState title="No billing history" />}
+            {charts.loading ? <Skeleton h={220} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
+              billing.length ? (
+                <>
+                  <SummaryStrip items={[
+                    ['12-month total', money0(billTotal)],
+                    ['Monthly average', money0(billAvg)],
+                    ['Best month', billBest ? `${monthShort(billBest)} · ${money0(billBest.value)}` : '—'],
+                    ['Latest month', billLast ? `${monthShort(billLast)} · ${money0(billLast.value)}` : '—'],
+                  ]} />
+                  <BarChart data={billing} format={money0} ariaLabel="Billing by month" showTable={billTable} showValues average={billAvg}
+                    onBarClick={(d) => nav(`/insights/billing?month=${d.key}`)} />
+                </>
+              ) : <EmptyState title="No billing history" />}
           </Section>
         )}
 
         {/* Jump back in */}
         <Section title="Jump back in" icon={History}>
-          {!recent.length ? (
-            <EmptyState icon={History} title="No recent screens">Screens you open will appear here.</EmptyState>
-          ) : (
+          {recent.length ? (
             <ul className="recent">
               {recent.map((r) => {
                 const m = moduleByCode[r.module]
@@ -265,41 +335,84 @@ export default function Home() {
                 )
               })}
             </ul>
+          ) : suggested.length ? (
+            <>
+              <p className="panel-sub">No recent screens yet. Start with a common one:</p>
+              <ul className="recent">
+                {suggested.map((x) => {
+                  const m = moduleByCode[x.module]
+                  const Icon = m.icon
+                  return (
+                    <li key={x.path}>
+                      <Link to={x.path} className="recent-item">
+                        <span className={`mod-icon accent-${m.accent}`}><Icon size={15} /></span>
+                        <span className="recent-text">
+                          <span className="recent-title">{x.title}</span>
+                          <span className="recent-sub">{m.name}</span>
+                        </span>
+                        <ArrowUpRight size={14} className="recent-arrow" />
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
+          ) : (
+            <EmptyState icon={History} title="No recent screens">Screens you open will appear here.</EmptyState>
           )}
         </Section>
 
+        {/* Payroll */}
         {can('PR') && (
           <Section title="Piece-rate payroll by pay date" icon={Wallet} className="span-2"
             action={<div className="row">
               <Link to="/insights/payroll-pending" className="panel-link">Pending payroll <ArrowRight size={13} /></Link>
-              <button className="btn small ghost" onClick={() => setPayTable((t) => !t)} aria-pressed={payTable}><Table2 size={13} /> {payTable ? 'Chart' : 'Table'}</button>
+              <ChartToggle table={payTable} onChange={setPayTable} />
             </div>}>
-            <p className="panel-sub">Piece-rate pay posted to labor paid (qty × price × pay %), last 12 payroll dates. Hourly hours shown in the tooltip.</p>
-            {charts.loading ? <Skeleton h={180} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
-              payroll.length ? <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} onBarClick={(d) => nav(`/insights/payroll-date?date=${String(d.key).slice(0, 10)}`)} /> : <EmptyState title="No payroll history" />}
+            {charts.loading ? <Skeleton h={220} /> : charts.error ? <ErrorState message={charts.error} onRetry={charts.reload} /> :
+              payroll.length ? (
+                <>
+                  <SummaryStrip items={[
+                    [`Last ${payroll.length} pay dates`, money0(payTotal)],
+                    ['Dates with piece pay', `${payroll.filter((p) => p.value > 0).length} of ${payroll.length}`],
+                    ['Highest', payBest ? `${payBest.short} · ${money0(payBest.value)}` : '—'],
+                    ['Latest', payLast ? `${payLast.short} · ${money0(payLast.value)}` : '—'],
+                  ]} />
+                  <BarChart data={payroll} format={(v) => fmtMoney(v)} ariaLabel="Piece-rate payroll by pay date" showTable={payTable} showValues
+                    onBarClick={(d) => nav(`/insights/payroll-date?date=${String(d.key).slice(0, 10)}`)} />
+                </>
+              ) : <EmptyState title="No payroll history" />}
           </Section>
         )}
+
         {/* Activity */}
         <Section title="Recent activity" icon={Activity}>
           {activity.loading && <SkeletonRows rows={5} cols={2} />}
           {activity.error && <ErrorState message={activity.error} onRetry={activity.reload} />}
           {activity.data && !activity.data.rows.length && <EmptyState title="No recent activity" />}
-          <ul className="feed">
-            {activity.data?.rows.map((r, i) => {
-              const m = moduleByCode[r.module]
-              const Icon = m?.icon
-              const inner = (
-                <>
-                  <span className={`feed-icon accent-${m?.accent || 'slate'}`}>{Icon && <Icon size={13} />}</span>
-                  <span className="feed-text">
-                    <span className="feed-title">{r.title}</span>
-                    <span className="feed-sub">{r.kind}{r.UserEntered ? ` · ${r.UserEntered}` : ''} · {timeAgo(r.DateEntered)}</span>
-                  </span>
-                </>
-              )
-              return <li key={i}>{m?.ready ? <Link to={r.link} className="feed-item">{inner}</Link> : <div className="feed-item">{inner}</div>}</li>
-            })}
-          </ul>
+          <div className="feed">
+            {activityGroups.map((g) => (
+              <div key={g.label}>
+                <div className="feed-day">{g.label}</div>
+                <ul className="feed-list">
+                  {g.rows.map((r, i) => {
+                    const m = moduleByCode[r.module]
+                    const Icon = m?.icon
+                    const inner = (
+                      <>
+                        <span className={`feed-icon accent-${m?.accent || 'slate'}`}>{Icon && <Icon size={13} />}</span>
+                        <span className="feed-text">
+                          <span className="feed-title">{r.title}</span>
+                          <span className="feed-sub">{r.kind}{r.UserEntered ? ` · ${r.UserEntered}` : ''} · {timeAgo(r.DateEntered)}</span>
+                        </span>
+                      </>
+                    )
+                    return <li key={i}>{m?.ready ? <Link to={r.link} className="feed-item">{inner}</Link> : <div className="feed-item">{inner}</div>}</li>
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
         </Section>
       </div>
     </div>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "client-demo",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd client && set VITE_DEMO=1&& npx vite --port 5173"],
+      "port": 5173
+    }
+  ]
+}

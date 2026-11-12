@@ -4,10 +4,11 @@ import { useMemo, useState } from 'react'
  * Single-series column chart (SVG). data = [{ key, label, value, tip: [ [k,v], ... ] }].
  * Spec: ≤24px columns, 4px rounded tops anchored to a single baseline, hairline grid,
  * per-column hover tooltip, value label on the last column only, and an optional table view.
+ * Optional: showValues puts a value label on every column; average draws a dashed reference line.
  */
-export default function BarChart({ data, format = (v) => v, height = 200, ariaLabel, showTable, onBarClick }) {
+export default function BarChart({ data, format = (v) => v, height = 200, ariaLabel, showTable, onBarClick, showValues = false, average }) {
   const [hover, setHover] = useState(null)
-  const W = 640, H = height, padL = 48, padR = 12, padT = 18, padB = 26
+  const W = 640, H = height, padL = 48, padR = average > 0 ? 52 : 12, padT = 18, padB = 26
   const innerW = W - padL - padR, innerH = H - padT - padB
 
   const { ticks, max } = useMemo(() => {
@@ -52,7 +53,7 @@ export default function BarChart({ data, format = (v) => v, height = 200, ariaLa
           const x0 = cx - bw / 2, x1 = cx + bw / 2, base = padT + innerH
           const path = hgt <= 0 ? '' :
             `M${x0},${base} L${x0},${top + r} Q${x0},${top} ${x0 + r},${top} L${x1 - r},${top} Q${x1},${top} ${x1},${top + r} L${x1},${base} Z`
-          const showLabel = i === data.length - 1 || hover === i
+          const showLabel = showValues || i === data.length - 1 || hover === i
           return (
             <g key={d.key}>
               <rect x={padL + slot * i} y={padT} width={slot} height={innerH} fill="transparent"
@@ -69,6 +70,12 @@ export default function BarChart({ data, format = (v) => v, height = 200, ariaLa
           )
         })}
         <line x1={padL} x2={W - padR} y1={padT + innerH} y2={padT + innerH} className="chart-baseline" />
+        {average > 0 && (
+          <g pointerEvents="none">
+            <line x1={padL} x2={W - padR} y1={y(average)} y2={y(average)} className="chart-avg" />
+            <text x={W - padR + 6} y={y(average)} dy="0.32em" textAnchor="start" className="chart-avg-label">Avg {compact(Math.round(average))}</text>
+          </g>
+        )}
       </svg>
       {hover != null && data[hover] && (
         <div className="chart-tip" style={{ left: `${((padL + slot * hover + slot / 2) / W) * 100}%` }}>

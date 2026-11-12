@@ -14,6 +14,7 @@ function getPool() {
       password: process.env.DB_PASSWORD,
       options: { encrypt: true },
       pool: { max: 10 },
+      requestTimeout: 90000,
     } : {
       connectionString: process.env.DB_CONNECTION,
       options: { trustedConnection: true },
