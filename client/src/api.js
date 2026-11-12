@@ -22,6 +22,40 @@ async function demoGet(path, params) {
   throw Object.assign(new Error('This screen has no sample data in the online demo.'), { status: 404 });
 }
 
+// Demo writes: changes are applied to the in-memory snapshot (lost on page reload) so a presenter can add, edit
+// and delete records and watch lists update. Action endpoints (post, process, ...) just report success.
+let demoSeq = 90000;
+const idKey = (row) => Object.keys(row || {}).find((k) => /id$/i.test(k)) || Object.keys(row || {})[0];
+const listsFor = (bare) => Object.entries(demoData).filter(([k, v]) => k.split('?')[0] === bare && v && Array.isArray(v.rows)).map(([, v]) => v);
+async function demoWrite(path, method, body) {
+  await demoGet('/auth/login').catch(() => {}); // makes sure the snapshot is loaded
+  const bare = path.split('?')[0];
+  const segs = bare.split('/');
+  const last = segs[segs.length - 1];
+  const parent = segs.slice(0, -1).join('/');
+  const numeric = /^d+$/.test(last);
+  if (method === 'POST') {
+    const id = ++demoSeq;
+    for (const l of listsFor(bare)) {
+      const k = idKey(l.rows[0]);
+      l.rows.unshift({ ...(k ? { [k]: id } : {}), ...body });
+      if (typeof l.total === 'number') l.total += 1;
+    }
+    return { ok: true, id, message: 'Saved (demo)' };
+  }
+  if (numeric && (method === 'PUT' || method === 'PATCH' || method === 'DELETE')) {
+    for (const l of listsFor(parent)) {
+      const k = idKey(l.rows[0]);
+      const i = l.rows.findIndex((r) => String(r[k]) === last);
+      if (i < 0) continue;
+      if (method === 'DELETE') { l.rows.splice(i, 1); if (typeof l.total === 'number') l.total -= 1; } else Object.assign(l.rows[i], body);
+    }
+    const d = demoData[bare];
+    if (d && typeof d === 'object' && method !== 'DELETE') Object.assign(d, body);
+  }
+  return { ok: true, id: numeric ? Number(last) : undefined, message: 'Done (demo)' };
+}
+
 const USER_KEY = 'sw_user';
 const REMEMBER_USER_KEY = 'sw_remember_username';
 
@@ -80,7 +114,7 @@ export async function apiBlob(path) {
 export async function api(path, { method = 'GET', body, params } = {}) {
   if (DEMO) {
     if (path === '/auth/login') return demoGet('/auth/login');
-    if (method !== 'GET') throw Object.assign(new Error('Demo mode: changes are not saved. Run the full system to add or edit records.'), { status: 403 });
+    if (method !== 'GET') return demoWrite(path, method, body || {});
     return demoGet(path, params);
   }
   let url = `/api${path}`;
