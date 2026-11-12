@@ -113,7 +113,10 @@ export async function apiBlob(path) {
 
 export async function api(path, { method = 'GET', body, params } = {}) {
   if (DEMO) {
-    if (path === '/auth/login') return demoGet('/auth/login');
+    if (path === '/auth/login') {
+      if (body?.username !== 'demo' || body?.password !== 'demo') throw Object.assign(new Error('Invalid username or password.'), { status: 401 });
+      return demoGet('/auth/login');
+    }
     if (method !== 'GET') return demoWrite(path, method, body || {});
     return demoGet(path, params);
   }
