@@ -1,3 +1,27 @@
+// Demo build (GitHub Pages): no server, so GET calls are answered from a recorded snapshot (public/demo-data.json)
+// of the sample database and every change is refused. Normal builds never set VITE_DEMO.
+export const DEMO = import.meta.env.VITE_DEMO === '1';
+const BASE = import.meta.env.BASE_URL;
+let demoData = null;
+const demoKey = (path, params) => {
+  const qs = new URLSearchParams(Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== '').map(([k, v]) => [k, String(v)]));
+  const [p, q = ''] = path.split('?');
+  for (const [k, v] of new URLSearchParams(q)) qs.set(k, v);
+  qs.sort();
+  const s = qs.toString();
+  return s ? `${p}?${s}` : p;
+};
+async function demoGet(path, params) {
+  if (!demoData) demoData = await (await fetch(`${BASE}demo-data.json`)).json();
+  const key = demoKey(path, params);
+  if (key in demoData) return demoData[key];
+  const bare = key.split('?')[0];
+  if (bare in demoData) return demoData[bare];
+  const alt = Object.keys(demoData).find((k) => k.split('?')[0] === bare);
+  if (alt) return demoData[alt];
+  throw Object.assign(new Error('This screen has no sample data in the online demo.'), { status: 404 });
+}
+
 const USER_KEY = 'sw_user';
 const REMEMBER_USER_KEY = 'sw_remember_username';
 
@@ -29,6 +53,7 @@ export const session = {
     for (const s of stores()) { s.removeItem(USER_KEY); s.removeItem('sw_token'); }
   },
   async logout() {
+    if (DEMO) { session.clear(); return; }
     try { await fetch('/api/auth/logout', { method: 'POST', headers: CLIENT_HEADERS, credentials: 'same-origin' }); } catch { /* offline */ }
     session.clear();
   },
@@ -45,13 +70,19 @@ export const CLIENT_HEADERS = { 'X-Staffware-Client': '1' };
 
 // Raw fetch for file downloads — same session cookie and header as api().
 export async function apiBlob(path) {
+  if (DEMO) throw new Error('Exports are not available in the online demo.');
   const res = await fetch(`/api${path}`, { headers: CLIENT_HEADERS, credentials: 'same-origin' });
-  if (res.status === 401) { session.clear(); window.location.href = '/login'; }
+  if (res.status === 401) { session.clear(); window.location.href = `${BASE}login`; }
   if (!res.ok) throw new Error('Export failed');
   return res.blob();
 }
 
 export async function api(path, { method = 'GET', body, params } = {}) {
+  if (DEMO) {
+    if (path === '/auth/login') return demoGet('/auth/login');
+    if (method !== 'GET') throw Object.assign(new Error('Demo mode: changes are not saved. Run the full system to add or edit records.'), { status: 403 });
+    return demoGet(path, params);
+  }
   let url = `/api${path}`;
   if (params) {
     const qs = new URLSearchParams(
@@ -76,7 +107,7 @@ export async function api(path, { method = 'GET', body, params } = {}) {
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && path !== '/auth/login') {
     session.clear();
-    window.location.href = '/login';
+    window.location.href = `${BASE}login`;
   }
   if (!res.ok) throw Object.assign(new Error(data.error || `Request failed (${res.status})`), { status: res.status, data });
   return data;

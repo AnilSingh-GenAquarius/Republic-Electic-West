@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle, ArrowRight, BarChart3, CheckCircle2, Eye, EyeOff, FileText, Info, Layers, Loader2, Lock, User, Users,
 } from 'lucide-react'
-import { api, session } from '../api'
+import { api, session, DEMO } from '../api'
 import Logo from '../components/Logo'
 
 const FEATURES = [
@@ -146,6 +146,7 @@ export default function Login() {
               : <>Sign In <ArrowRight size={17} /></>}
           </button>
 
+          {DEMO && <p className="login-note"><b>Online demo</b> - sample data, read-only. Enter any username and password.</p>}
           <p className="login-note">© {new Date().getFullYear()} StaffWare ERP. All rights reserved.</p>
         </form>
       </main>

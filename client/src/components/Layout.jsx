@@ -4,7 +4,7 @@ import {
   Bell, ChevronDown, ChevronsLeft, ChevronsRight, LogOut, Menu, Search, Building2, Check, X,
 } from 'lucide-react'
 import Logo from './Logo'
-import { api, session } from '../api'
+import { api, session, DEMO } from '../api'
 import { DASHBOARD, GROUPS, MODULES, moduleByCode } from '../modules'
 import { usePref } from '../prefs'
 import { useLookups } from './Pickers'
@@ -90,7 +90,7 @@ function Topbar({ openSearch, openMobile }) {
   const [alerts, setAlerts] = useState(null)
   const [seen, setSeen] = usePref('sw_alerts_seen', [])
 
-  useEffect(() => { fetch('/api/health').then((r) => r.json()).then((d) => setEnv(d.env)).catch(() => {}) }, [])
+  useEffect(() => { if (DEMO) { setEnv('DEMO'); return } fetch('/api/health').then((r) => r.json()).then((d) => setEnv(d.env)).catch(() => {}) }, [])
   useEffect(() => { api('/dashboard/attention').then((d) => setAlerts(d.items)).catch(() => setAlerts([])) }, [])
 
   const unread = (alerts || []).filter((a) => !seen.includes(a.id)).length

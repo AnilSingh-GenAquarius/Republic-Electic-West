@@ -1,5 +1,5 @@
 # Build the StaffWare web client (client/) and deploy it to GitHub Pages.
-# Note: Pages hosts only the front end; the Node server and SQL Server are not part of this site.
+# Pages has no server, so this build is a read-only DEMO (VITE_DEMO=1) that uses recorded sample data.
 name: Deploy static content to Pages
  
 on:
@@ -43,6 +43,7 @@ jobs:
         working-directory: client
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_DEMO: "1" # read-only demo: answers come from client/public/demo-data.json, no server needed
         run: |
           npm ci
           npm run build
